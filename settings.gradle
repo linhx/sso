@@ -1,1 +1,3 @@
 rootProject.name = 'sso'
+include ':utils'
+project(':utils').projectDir = new File(settingsDir, '../utils')

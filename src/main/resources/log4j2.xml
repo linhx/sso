@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Configuration status="INFO">
+    <Appenders>
+        <Console name="LogToConsole" target="SYSTEM_OUT">
+            <PatternLayout charset="UTF-8" pattern="%d{ISO8601}{GMT} [%-5level] [%t] %c{1} - %msg%n"/>
+        </Console>
+        <File name="LogToFile" fileName="logs/app.log">
+            <PatternLayout charset="UTF-8" pattern="%d{ISO8601}{GMT} [%-5level] [%t] %c{1} - %msg%n"/>
+        </File>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="LogToConsole"/>
+            <AppenderRef ref="LogToFile" level="warn"/>
+        </Root>
+    </Loggers>
+</Configuration>
