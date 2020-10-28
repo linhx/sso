@@ -32,9 +32,9 @@ public class EnvironmentVariable {
         return new String[] {};
     }
 
-    @Value("${security.jwt.tokenSecret}")
-    private String tokenSecret;
+    @Value("${security.jwt.access-token-secret}")
+    private String accessTokenSecret;
 
-    @Value("${security.jwt.refreshTokenSecret}")
+    @Value("${security.jwt.refresh-token-secret}")
     private String refreshTokenSecret;
 }

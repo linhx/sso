@@ -1,3 +1,5 @@
 rootProject.name = 'sso'
 include ':utils'
+include ':commons'
 project(':utils').projectDir = new File(settingsDir, '../utils')
+project(':commons').projectDir = new File(settingsDir, '../commons')
