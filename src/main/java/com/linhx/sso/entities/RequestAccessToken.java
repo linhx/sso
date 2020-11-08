@@ -5,20 +5,23 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import java.util.Date;
+
 /**
- * User
+ * RequestAccessToken
  *
  * @author linhx
- * @since 28/10/2020
+ * @since 08/11/2020
  */
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class User {
+public class RequestAccessToken {
     private Long id;
     private String uuid;
-    private String username;
-    private String password;
-    private boolean isActive;
+    private Long userId;
+    private Long clientApplicationId;
+    private Date expired;
+    private boolean isValid;
 }

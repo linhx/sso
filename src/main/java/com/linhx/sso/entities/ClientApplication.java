@@ -6,19 +6,22 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 /**
- * User
+ * ClientApplication
  *
  * @author linhx
- * @since 28/10/2020
+ * @since 07/11/2020
  */
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
-public class User {
+public class ClientApplication {
     private Long id;
     private String uuid;
-    private String username;
-    private String password;
-    private boolean isActive;
+    private String host;
+    private String clientId;
+    private String secret;
+    private String accessTokenSecret;
+    private String refreshTokenSecret;
+    private String signInUrl;
 }

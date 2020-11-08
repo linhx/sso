@@ -2,6 +2,7 @@ package com.linhx.sso.configs.security;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linhx.exceptions.message.Message;
+import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.controller.dtos.response.MessagesDto;
 import com.linhx.sso.entities.User;
 import com.linhx.sso.exceptions.LoginInfoWrongException;
@@ -18,6 +19,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -90,6 +92,14 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                     refreshTokenResult.getToken(),
                     refreshTokenResult.getExpired()
             );
+
+            var cookieAccessToken = new Cookie(SecurityConstants.COOKIE_ACCESS_TOKEN, accessTokenResult.getToken());
+            cookieAccessToken.setHttpOnly(true);
+            var cookieRefreshToken = new Cookie(SecurityConstants.COOKIE_REFRESH_TOKEN, refreshTokenResult.getToken());
+            cookieRefreshToken.setHttpOnly(true);
+
+            response.addCookie(cookieAccessToken);
+            response.addCookie(cookieRefreshToken);
             ObjectMapper mapper = new ObjectMapper();
             String tokensStr = mapper.writeValueAsString(tokens);
             response.setContentType("application/json");

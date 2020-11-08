@@ -1,0 +1,40 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Login</title>
+        <link rel="stylesheet" th:href="@{/assets/style/bootstrap.min.css}"></link>
+        <style>
+          #login {
+            max-width: 500px;
+            width: 90%;
+            margin: auto;
+          }
+        </style>
+    </head>
+    <body>
+        <h1 class="text-center">Login</h1>
+        <form id="login">
+            <input id="username" class="form-control my-2" name="username" placeholder="Username" />
+            <input id="password" class="form-control my-2" name="password" type="password" placeholder="Password" />
+
+            <button class="btn btn-info my-2" type="submit">Login</button>
+        </form>
+
+        <script>
+            let $form = document.getElementById("login");
+            let $username = document.getElementById("username");
+            let $password = document.getElementById("password");
+            $form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                let xhr = new XMLHttpRequest();
+                xhr.open("POST", "/login", true);
+                xhr.setRequestHeader('Content-Type', 'application/json');
+                xhr.send(JSON.stringify({
+                    username: $username.value,
+                    password: $password.value
+                }));
+            });
+        </script>
+   </body>
+</html>

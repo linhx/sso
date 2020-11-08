@@ -11,7 +11,6 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
@@ -25,13 +24,13 @@ public class TokenService {
     private EnvironmentVariable env;
 
     public JwtUtils.JwtResult generateAccessToken(User user) throws Exception {
-        return JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_ID, user.getId()),
+        return JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_ID, user.getUuid()),
                 this.env.getAccessTokenSecret(),
                 SecurityConstants.TOKEN_EXPIRATION_SECONDS);
     }
 
     public JwtUtils.JwtResult generateRefreshToken(User user) throws Exception {
-        return JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_ID, user.getId()),
+        return JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_ID, user.getUuid()),
                 this.env.getRefreshTokenSecret(),
                 SecurityConstants.REFRESH_TOKEN_EXPIRATION_SECONDS);
     }
@@ -40,7 +39,7 @@ public class TokenService {
         Claims claims = JwtUtils.parse(token, this.env.getAccessTokenSecret());
         var id = claims.get(SecurityConstants.JWT_ID, String.class);
         var user = new User();
-        user.setId(id);
+        user.setUuid(id);
         return user;
     }
 
@@ -48,7 +47,7 @@ public class TokenService {
         Claims claims = JwtUtils.parse(token, this.env.getRefreshTokenSecret());
         var id = claims.get(SecurityConstants.JWT_ID, String.class);
         var user = new User();
-        user.setId(id);
+        user.setUuid(id);
         return user;
     }
 

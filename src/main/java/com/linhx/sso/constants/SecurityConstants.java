@@ -18,10 +18,16 @@ public class SecurityConstants {
     public static final String JWT_PHONE_NUMBER = "phone_number";
     public static final String JWT_ROLE_ID = "role_id";
     public static final String JWT_PRIVILEGES = "privileges";
+    public static final String JWT_RAT_UUID = "rat_id";
 
+    public static final String REQUEST_ACCESS_TOKEN = "rat";
 
     public static final Integer TOKEN_EXPIRATION_SECONDS = 30 * 60; // 30 minutes
+    public static final Integer REQUEST_TOKEN_EXPIRATION_SECONDS = 3 * 60; // 3 minutes
     public static final Integer REFRESH_TOKEN_EXPIRATION_SECONDS = 7 * 24 * 60 * 60; // 7 days
+
+    public static final String COOKIE_ACCESS_TOKEN = "at";
+    public static final String COOKIE_REFRESH_TOKEN = "rt";
 
     /**
      * Reset password

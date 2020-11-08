@@ -1,7 +1,8 @@
 package com.linhx.sso.configs.security;
 
+import com.linhx.exceptions.BaseException;
 import com.linhx.sso.entities.User;
-import com.linhx.sso.services.IUserService;
+import com.linhx.sso.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
@@ -13,15 +14,18 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
     @Autowired
-    private IUserService userService;
+    private UserService userService;
     @Autowired
     private TokenService tokenService;
 
     @Override
-    public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String username)
-            throws UsernameNotFoundException {
+    public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String username) {
         User user = null;
-        user = this.userService.findByUsername(username).orElse(null);
+        try {
+            user = this.userService.findByUsername(username).orElse(null);
+        } catch (BaseException e) {
+            e.printStackTrace();
+        }
         if (user == null) {
             throw new UsernameNotFoundException("error.login.not-found");
         }

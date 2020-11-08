@@ -1,5 +1,6 @@
 package com.linhx.sso.configs.security;
 
+import com.linhx.sso.constants.Paths;
 import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.entities.User;
 import com.linhx.utils.StringUtils;
@@ -15,6 +16,7 @@ import org.springframework.security.web.authentication.www.BasicAuthenticationFi
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
+import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -38,13 +40,20 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
     }
 
     private UsernamePasswordAuthenticationToken getAuthentication (HttpServletRequest request) {
-        String fullToken = request.getHeader(SecurityConstants.TOKEN_REQUEST_HEADER);
-        if (StringUtils.isEmpty(fullToken)) return null;
-        String token = fullToken.replace(SecurityConstants.TOKEN_PREFIX, "");
-        if (StringUtils.isEmpty(token)) return null;
+        Cookie[] cookies = request.getCookies();
+
+        String accessToken = null;
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (SecurityConstants.COOKIE_ACCESS_TOKEN.equals(cookie.getName())) {
+                    accessToken = cookie.getValue();
+                }
+            }
+        }
+        if (StringUtils.isEmpty(accessToken)) return null;
         try {
-            User user = this.tokenService.parseAccessToken(token);
-            return new UsernamePasswordAuthenticationToken(user, null); // TODO authorities
+            User user = this.tokenService.parseAccessToken(accessToken);
+            return new UsernamePasswordAuthenticationToken(user, null, null); // TODO authorities
         } catch (ExpiredJwtException e) {
             logger.warn("Request to parse expired JWT:", e);
         } catch (UnsupportedJwtException e) {
@@ -61,6 +70,10 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void onUnsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
-        super.onUnsuccessfulAuthentication(request, response, failed);
+        if (Paths.ACCOUNT.equals(request.getServletPath())) {
+            response.sendRedirect("/login"); // TODO callback url
+        } else {
+            super.onUnsuccessfulAuthentication(request, response, failed);
+        }
     }
 }

@@ -37,4 +37,7 @@ public class EnvironmentVariable {
 
     @Value("${security.jwt.refresh-token-secret}")
     private String refreshTokenSecret;
+
+    @Value("${security.jwt.request-access-token-secret}")
+    private String requestAccessTokenSecret;
 }
