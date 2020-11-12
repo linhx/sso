@@ -1,10 +1,14 @@
 server:
-  port: 3000
+  port: 3001
+
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
 
 security:
   cors:
     origins: http://localhost:8080
     methods: '*'
   jwt:
-    tokenSecret: keys_used_with_HMAC-SHA_algorithms_must_have_a_size_greater_than_or_equal_256_bits
-    refreshTokenSecret: keys_used_with_HMAC-SHA_algorithms_must_have_a_size_greater_than_or_equal_256_bits
+    access-token-secret: keys_used_with_HMAC-SHA_algorithms_must_have_a_size_greater_than_or_equal_256_bits
+    refresh-token-secret: keys_used_with_HMAC-SHA_algorithms_must_have_a_size_greater_than_or_equal_256_bits
+    request-access-token-secret: keys_used_with_HMAC-SHA_algorithms_must_have_a_size_greater_than_or_equal_256_bits
