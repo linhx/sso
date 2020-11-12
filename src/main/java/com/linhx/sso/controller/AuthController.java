@@ -53,12 +53,14 @@ public class AuthController {
     }
 
     @PostMapping(Paths.GRANT_TOKEN)
+    @ResponseBody
     public Object grantToken(@RequestBody GrantAccessTokenDto requestAccessToken) throws BaseException {
         return this.requestAccessTokenService.grantAccessToken(requestAccessToken);
     }
 
     @PostMapping(Paths.AUTH)
-    public Object auth(AuthDto dto) throws AuthenticationException, BaseException {
+    @ResponseBody
+    public Object auth(@RequestBody AuthDto dto) throws AuthenticationException, BaseException {
         return this.authService.auth(dto);
     }
 }

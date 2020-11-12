@@ -5,6 +5,7 @@ import com.linhx.sso.entities.ClientApplication;
 import com.linhx.sso.repositories.ClientApplicationRepository;
 import com.linhx.sso.services.ClientApplicationService;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
 
@@ -15,6 +16,7 @@ import java.util.Optional;
  * @since 08/11/2020
  */
 @Service
+@Transactional(rollbackFor = Throwable.class)
 public class ClientApplicationServiceImpl implements ClientApplicationService {
     private final ClientApplicationRepository clientApplicationRepository;
 

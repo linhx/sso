@@ -15,4 +15,8 @@ public interface RequestAccessTokenRepository {
     RequestAccessToken create(Long userId, Long clientAppId) throws BaseException;
 
     Optional<RequestAccessToken> findValidByUuid(String uuid) throws BaseException;
+
+    long deleteInvalid();
+
+    RequestAccessToken save(RequestAccessToken requestAccessToken);
 }

@@ -15,6 +15,7 @@ import com.linhx.sso.services.UserService;
 import com.linhx.utils.JwtUtils;
 import com.linhx.utils.StringUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponents;
 import org.springframework.web.util.UriComponentsBuilder;
 
@@ -28,6 +29,7 @@ import java.util.Optional;
  * @since 07/11/2020
  */
 @Service
+@Transactional(rollbackFor = Throwable.class)
 public class RequestAccessTokenServiceImpl implements RequestAccessTokenService {
     private final EnvironmentVariable env;
     private final RequestAccessTokenRepository requestAccessTokenRepository;
@@ -48,7 +50,11 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
             throw new BusinessException("error.createRat.clientAppNotFound");
         }
         var clientApplication = clientApplicationOpt.get();
-        var request = this.requestAccessTokenRepository.create(user.getId(), clientApplication.getId());
+        var userOpt = this.userService.findByUuid(user.getUuid());
+        if (userOpt.isEmpty()) {
+            throw new BusinessException("error.createRat.userNotFound");
+        }
+        var request = this.requestAccessTokenRepository.create(userOpt.get().getId(), clientApplication.getId());
         var jwtResult = JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_RAT_UUID, request.getUuid()),
                 this.env.getRequestAccessTokenSecret(),
                 SecurityConstants.REQUEST_TOKEN_EXPIRATION_SECONDS);
@@ -113,8 +119,14 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
         } catch (Exception e) {
             throw new BusinessException("error.grantAccessToken.cantCreateJwt");
         } finally {
-            rat.setValid(true);
-            // TODO save rat
+            rat.setValid(false);
+            this.requestAccessTokenRepository.save(rat);
         }
+    }
+
+    @Override
+    public Object deleteInvalidRequestsAccessToken() throws BaseException {
+        this.requestAccessTokenRepository.deleteInvalid();
+        return null;
     }
 }

@@ -32,6 +32,7 @@ public class UserDetailsService implements org.springframework.security.core.use
         // remove sensitive info
         User cloneUser = new User();
         cloneUser.setId(user.getId());
+        cloneUser.setUuid(user.getUuid());
         cloneUser.setActive(user.isActive());
 
         return new UserDetails(cloneUser,

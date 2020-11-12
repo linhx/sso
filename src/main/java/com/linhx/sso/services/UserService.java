@@ -14,4 +14,5 @@ import java.util.Optional;
 public interface UserService {
     Optional<User> findByUsername(String username) throws BaseException;
     Optional<User> findById(Long id) throws BaseException;
+    Optional<User> findByUuid(String uuid) throws BaseException;
 }

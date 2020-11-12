@@ -18,4 +18,5 @@ public interface RequestAccessTokenService {
     String createRequestAccessTokenUrl(User user, URL callback) throws Exception;
     Optional<RequestAccessToken> findValidByUuid(String uuid) throws BaseException;
     Object grantAccessToken(GrantAccessTokenDto dto) throws BaseException;
+    Object deleteInvalidRequestsAccessToken() throws BaseException;
 }

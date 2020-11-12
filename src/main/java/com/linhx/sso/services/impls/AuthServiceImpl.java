@@ -9,6 +9,7 @@ import com.linhx.sso.services.AuthService;
 import com.linhx.sso.services.ClientApplicationService;
 import com.linhx.utils.JwtUtils;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.naming.AuthenticationException;
 
