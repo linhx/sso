@@ -32,7 +32,8 @@ public class AuthController {
     private final RequestAccessTokenService requestAccessTokenService;
     private final AuthService authService;
 
-    public AuthController(TokenService tokenService, RequestAccessTokenService requestAccessTokenService, AuthService authService) {
+    public AuthController(TokenService tokenService, RequestAccessTokenService requestAccessTokenService,
+                          AuthService authService) {
         this.tokenService = tokenService;
         this.requestAccessTokenService = requestAccessTokenService;
         this.authService = authService;

@@ -36,7 +36,10 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
     private final ClientApplicationRepository clientApplicationRepository;
     private final UserService userService;
 
-    public RequestAccessTokenServiceImpl(EnvironmentVariable env, RequestAccessTokenRepository requestAccessTokenRepository, ClientApplicationRepository clientApplicationRepository, UserService userService) {
+    public RequestAccessTokenServiceImpl(EnvironmentVariable env,
+                                         RequestAccessTokenRepository requestAccessTokenRepository,
+                                         ClientApplicationRepository clientApplicationRepository,
+                                         UserService userService) {
         this.env = env;
         this.requestAccessTokenRepository = requestAccessTokenRepository;
         this.clientApplicationRepository = clientApplicationRepository;
@@ -44,8 +47,10 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
     }
 
     @Override
-    public String createRequestAccessTokenUrl(User user, URL callbackUrl) throws Exception {
-        var clientApplicationOpt = this.clientApplicationRepository.findByHost(callbackUrl.getHost());
+    public String createRequestAccessTokenUrl(User user, String callbackUrlStr) throws Exception {
+        var callbackUrl = new URL(callbackUrlStr);
+        var clientApplicationOpt =
+                this.clientApplicationRepository.findByHost(callbackUrl.getHost());
         if (clientApplicationOpt.isEmpty()) {
             throw new BusinessException("error.createRat.clientAppNotFound");
         }
@@ -54,14 +59,17 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
         if (userOpt.isEmpty()) {
             throw new BusinessException("error.createRat.userNotFound");
         }
-        var request = this.requestAccessTokenRepository.create(userOpt.get().getId(), clientApplication.getId());
-        var jwtResult = JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_RAT_UUID, request.getUuid()),
+        var request = this.requestAccessTokenRepository.create(userOpt.get().getId(),
+                clientApplication.getId());
+        var jwtResult = JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_RAT_UUID,
+                request.getUuid()),
                 this.env.getRequestAccessTokenSecret(),
                 SecurityConstants.REQUEST_TOKEN_EXPIRATION_SECONDS);
 
         UriComponents uriComponents = UriComponentsBuilder
                 .fromUriString(clientApplication.getSignInUrl())
                 .queryParam(SecurityConstants.REQUEST_ACCESS_TOKEN, jwtResult.getToken())
+                .queryParam(SecurityConstants.CALLBACK, callbackUrlStr)
                 .build();
         return uriComponents.toUriString();
     }
@@ -73,7 +81,8 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
 
     @Override
     public Object grantAccessToken(GrantAccessTokenDto dto) throws BaseException {
-        var clientAppOpt = this.clientApplicationRepository.findByClientIdAndSecret(dto.getClientId(), dto.getClientSecret());
+        var clientAppOpt =
+                this.clientApplicationRepository.findByClientIdAndSecret(dto.getClientId(), dto.getClientSecret());
         if (clientAppOpt.isEmpty()) {
             throw new BusinessException("error.grantAccessToken.clientAppNotFound");
         }
@@ -104,11 +113,13 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
         var user = userOpt.get();
 
         try {
-            var accessTokenJwtResult = JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_USERNAME, user.getUsername()),
+            var accessTokenJwtResult = JwtUtils.generate(builder ->
+                            builder.claim(SecurityConstants.JWT_USERNAME, user.getUsername()),
                     clientApp.getAccessTokenSecret(),
                     SecurityConstants.TOKEN_EXPIRATION_SECONDS);
 
-            var refreshTokenJwtResult = JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_USERNAME, user.getUsername()),
+            var refreshTokenJwtResult = JwtUtils.generate(builder ->
+                            builder.claim(SecurityConstants.JWT_USERNAME, user.getUsername()),
                     clientApp.getRefreshTokenSecret(),
                     SecurityConstants.TOKEN_EXPIRATION_SECONDS);
 
@@ -125,8 +136,7 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
     }
 
     @Override
-    public Object deleteInvalidRequestsAccessToken() throws BaseException {
+    public void deleteInvalidRequestsAccessToken() throws BaseException {
         this.requestAccessTokenRepository.deleteInvalid();
-        return null;
     }
 }

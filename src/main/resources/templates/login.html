@@ -11,6 +11,7 @@
             margin: auto;
           }
         </style>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     </head>
     <body>
         <h1 class="text-center">Login</h1>
@@ -25,15 +26,13 @@
             let $form = document.getElementById("login");
             let $username = document.getElementById("username");
             let $password = document.getElementById("password");
+
             $form.addEventListener("submit", (e) => {
                 e.preventDefault();
-                let xhr = new XMLHttpRequest();
-                xhr.open("POST", "/login", true);
-                xhr.setRequestHeader('Content-Type', 'application/json');
-                xhr.send(JSON.stringify({
+                axios.post('/login', {
                     username: $username.value,
                     password: $password.value
-                }));
+                });
             });
         </script>
    </body>
