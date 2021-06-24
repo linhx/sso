@@ -1,0 +1,45 @@
+<!DOCTYPE HTML>
+<html xmlns:th="http://www.thymeleaf.org">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Login</title>
+        <link rel="stylesheet" th:href="@{/assets/style/bootstrap.min.css}"></link>
+        <style>
+          #login {
+            max-width: 500px;
+            width: 90%;
+            margin: auto;
+          }
+        </style>
+        <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+    </head>
+    <body>
+        <h1 class="text-center">Login</h1>
+        <form id="login" method="POST">
+            <input id="username" class="form-control my-2" name="username" placeholder="Username" />
+            <input id="password" class="form-control my-2" name="password" type="password" placeholder="Password" />
+
+            <button class="btn btn-info my-2" type="submit">Login</button>
+        </form>
+
+        <script>
+            let $form = document.getElementById("login");
+            let $username = document.getElementById("username");
+            let $password = document.getElementById("password");
+
+            $form.addEventListener("submit", (e) => {
+                e.preventDefault();
+                axios.post('/login', {
+                    username: $username.value,
+                    password: $password.value
+                }).then(() => {
+                    const callbackUrl = new URL(window.location.href).searchParams.get('callbackUrl') ||
+                        '/home';
+                    window.location.href = callbackUrl;
+                }).catch(e => {
+                    alert('Wrong username or password'); // TODO
+                });
+            });
+        </script>
+   </body>
+</html>

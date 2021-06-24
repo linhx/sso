@@ -1,0 +1,21 @@
+server:
+  port: ${APP_PORT}
+
+  jackson:
+    date-format: yyyy-MM-dd'T'HH:mm:ss.SSS'Z'
+
+security:
+  cors:
+    origins: ${CORS_ORIGINS}
+    methods: '*'
+  jwt:
+    access-token-secret: ${ACCESS_TOKEN_SECRET}
+    refresh-token-secret: ${REFRESH_TOKEN_SECRET}
+    request-access-token-secret: ${REQUEST_ACCESS_TOKEN_SECRET}
+  domain: ${SECURITY_DOMAIN}
+
+spring:
+  data:
+    mongodb:
+      uri: mongodb://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}
+      database: ${DATABASE_NAME}
