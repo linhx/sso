@@ -3,7 +3,9 @@ package com.linhx.sso.services.impls;
 import com.linhx.exceptions.BaseException;
 import com.linhx.exceptions.BusinessException;
 import com.linhx.sso.configs.EnvironmentVariable;
+import com.linhx.sso.configs.security.TokenService;
 import com.linhx.sso.configs.security.Tokens;
+import com.linhx.sso.configs.security.UserDetail;
 import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.controller.dtos.request.GrantAccessTokenDto;
 import com.linhx.sso.entities.RequestAccessToken;
@@ -35,15 +37,17 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
     private final RequestAccessTokenRepository requestAccessTokenRepository;
     private final ClientApplicationRepository clientApplicationRepository;
     private final UserService userService;
+    private final TokenService tokenService;
 
     public RequestAccessTokenServiceImpl(EnvironmentVariable env,
                                          RequestAccessTokenRepository requestAccessTokenRepository,
                                          ClientApplicationRepository clientApplicationRepository,
-                                         UserService userService) {
+                                         UserService userService, TokenService tokenService) {
         this.env = env;
         this.requestAccessTokenRepository = requestAccessTokenRepository;
         this.clientApplicationRepository = clientApplicationRepository;
         this.userService = userService;
+        this.tokenService = tokenService;
     }
 
     @Override
@@ -61,10 +65,12 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
         }
         var request = this.requestAccessTokenRepository.create(userOpt.get().getId(),
                 clientApplication.getId());
-        var jwtResult = JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_RAT_UUID,
-                request.getUuid()),
-                this.env.getRequestAccessTokenSecret(),
-                SecurityConstants.REQUEST_TOKEN_EXPIRATION_SECONDS);
+        var jwtResult = this.tokenService.generateToken(user.getId(),
+                token -> JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_RAT_UUID,
+                                request.getUuid()),
+                        this.env.getAccessTokenSecret(),
+                        SecurityConstants.REQUEST_TOKEN_EXPIRATION_SECONDS,
+                        token.getId()));
 
         UriComponents uriComponents = UriComponentsBuilder
                 .fromUriString(clientApplication.getSignInUrl())
@@ -113,15 +119,10 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
         var user = userOpt.get();
 
         try {
-            var accessTokenJwtResult = JwtUtils.generate(builder ->
-                            builder.claim(SecurityConstants.JWT_USERNAME, user.getUsername()),
-                    clientApp.getAccessTokenSecret(),
-                    SecurityConstants.TOKEN_EXPIRATION_SECONDS);
-
-            var refreshTokenJwtResult = JwtUtils.generate(builder ->
-                            builder.claim(SecurityConstants.JWT_USERNAME, user.getUsername()),
-                    clientApp.getRefreshTokenSecret(),
-                    SecurityConstants.TOKEN_EXPIRATION_SECONDS);
+            var userDetail = UserDetail.fromEntity(user);
+            var refreshTokenJwtResult = this.tokenService.generateRefreshToken(userDetail);
+            var accessTokenJwtResult = this.tokenService.generateAccessToken(UserDetail.fromEntity(user),
+                    refreshTokenJwtResult.getTokenId());
 
             return new Tokens(accessTokenJwtResult.getToken(), accessTokenJwtResult.getExpired(),
                     refreshTokenJwtResult.getToken(), refreshTokenJwtResult.getExpired());

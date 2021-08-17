@@ -5,7 +5,6 @@ import com.linhx.sso.controller.dtos.request.GrantAccessTokenDto;
 import com.linhx.sso.entities.RequestAccessToken;
 import com.linhx.sso.entities.User;
 
-import java.net.URL;
 import java.util.Optional;
 
 /**

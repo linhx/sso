@@ -1,7 +1,8 @@
 package com.linhx.sso.controller;
 
 import com.linhx.exceptions.BaseException;
-import com.linhx.sso.configs.security.TokenService;
+import com.linhx.sso.configs.EnvironmentVariable;
+import com.linhx.sso.constants.Pages;
 import com.linhx.sso.constants.Paths;
 import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.controller.dtos.request.AuthDto;
@@ -9,8 +10,6 @@ import com.linhx.sso.controller.dtos.request.GrantAccessTokenDto;
 import com.linhx.sso.entities.User;
 import com.linhx.sso.services.AuthService;
 import com.linhx.sso.services.RequestAccessTokenService;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -18,7 +17,6 @@ import org.springframework.web.bind.annotation.*;
 import javax.naming.AuthenticationException;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletResponse;
-import java.net.URL;
 
 /**
  * AuthController
@@ -29,21 +27,20 @@ import java.net.URL;
 @Controller
 @RequestMapping
 public class AuthController {
-    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
-    private final TokenService tokenService;
     private final RequestAccessTokenService requestAccessTokenService;
     private final AuthService authService;
+    private final EnvironmentVariable env;
 
-    public AuthController(TokenService tokenService, RequestAccessTokenService requestAccessTokenService,
-                          AuthService authService) {
-        this.tokenService = tokenService;
+    public AuthController(RequestAccessTokenService requestAccessTokenService,
+                          AuthService authService, EnvironmentVariable env) {
         this.requestAccessTokenService = requestAccessTokenService;
         this.authService = authService;
+        this.env = env;
     }
 
     @GetMapping(Paths.LOGIN)
     public String loginPage() {
-        return "login";
+        return Pages.LOGIN;
     }
 
     @GetMapping(Paths.ACCOUNT)
@@ -51,7 +48,6 @@ public class AuthController {
                         HttpServletResponse response,
                         @AuthenticationPrincipal User principal) throws Exception {
         var signInUrl = this.requestAccessTokenService.createRequestAccessTokenUrl(principal, callbackUrl);
-        System.out.println(signInUrl);
         response.sendRedirect(signInUrl);
     }
 
@@ -67,47 +63,21 @@ public class AuthController {
         return this.authService.auth(dto);
     }
 
-    @GetMapping("test")
+    @PostMapping(Paths.REFRESH_TOKEN)
     @ResponseBody
-    public Object getCookie(@CookieValue("at") String at, @CookieValue("rt") String rt) {
-        var cookie = new MyCookie();
-        cookie.setAt(at);
-        cookie.setRt(rt);
-        return cookie;
-    }
+    public void refreshToken(@CookieValue(SecurityConstants.COOKIE_REFRESH_TOKEN) String refreshToken,
+                               HttpServletResponse response)
+            throws BaseException, AuthenticationException {
+        var token = this.authService.refresh(refreshToken);
 
-    @GetMapping("testpage")
-    public String test() {
-        return "test";
-    }
+        var cookieAccessToken = new Cookie(SecurityConstants.COOKIE_ACCESS_TOKEN, token.getAccessToken());
+        cookieAccessToken.setHttpOnly(true);
+        cookieAccessToken.setDomain(this.env.getSecurityDomain());
+        var cookieRefreshToken = new Cookie(SecurityConstants.COOKIE_REFRESH_TOKEN, token.getRefreshToken());
+        cookieRefreshToken.setHttpOnly(true);
+        cookieRefreshToken.setDomain(this.env.getSecurityDomain());
 
-    @GetMapping("set-cookie")
-    @ResponseBody
-    public Object setCookie(HttpServletResponse response) {
-        var newCookie = new Cookie("test", "wowitsset-dmm");
-        newCookie.setHttpOnly(true);
-        response.addCookie(newCookie);
-        return "ss";
+        response.addCookie(cookieAccessToken);
+        response.addCookie(cookieRefreshToken);
     }
-}
-
-class MyCookie {
-    public String getAt() {
-        return at;
-    }
-
-    public void setAt(String at) {
-        this.at = at;
-    }
-
-    public String getRt() {
-        return rt;
-    }
-
-    public void setRt(String rt) {
-        this.rt = rt;
-    }
-
-    private String at;
-    private String rt;
 }

@@ -52,8 +52,8 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
         }
         if (StringUtils.isEmpty(accessToken)) return null;
         try {
-            User user = this.tokenService.parseAccessToken(accessToken);
-            return new UsernamePasswordAuthenticationToken(user, null, null); // TODO authorities
+            var tokenDetails = this.tokenService.parseAccessToken(accessToken);
+            return new UsernamePasswordAuthenticationToken(tokenDetails.getUser(), null, this.tokenService.getAuthorities(tokenDetails.getUser()));
         } catch (ExpiredJwtException e) {
             logger.warn("Request to parse expired JWT:", e);
         } catch (UnsupportedJwtException e) {
@@ -64,6 +64,8 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
             logger.warn("Request to parse WT with invalid signature:", e);
         } catch (IllegalArgumentException e) {
             logger.warn("Request to parse empty or null JWT:", e);
+        } catch (Exception e) {
+            logger.warn("Wrong jwt:", e);
         }
         return null;
     }

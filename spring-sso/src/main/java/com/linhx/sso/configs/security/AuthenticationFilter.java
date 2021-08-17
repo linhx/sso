@@ -88,8 +88,8 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                             Authentication authResult) {
         try {
             var userDetails = (UserDetails) authResult.getPrincipal();
-            JwtUtils.JwtResult accessTokenResult = this.tokenService.generateAccessToken(userDetails.getUser());
             JwtUtils.JwtResult refreshTokenResult = this.tokenService.generateRefreshToken(userDetails.getUser());
+            JwtUtils.JwtResult accessTokenResult = this.tokenService.generateAccessToken(userDetails.getUser(), refreshTokenResult.getTokenId());
 
             var cookieAccessToken = new Cookie(SecurityConstants.COOKIE_ACCESS_TOKEN, accessTokenResult.getToken());
             cookieAccessToken.setHttpOnly(true);

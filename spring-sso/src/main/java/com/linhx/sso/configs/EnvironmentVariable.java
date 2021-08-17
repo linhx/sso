@@ -17,30 +17,26 @@ public class EnvironmentVariable {
     private String corsOrigins;
     @Value("${security.cors.methods}")
     private String corsMethods;
+    @Value("${security.jwt.access-token-secret}")
+    private String accessTokenSecret;
+    @Value("${security.jwt.refresh-token-secret}")
+    private String refreshTokenSecret;
+    @Value("${security.jwt.request-access-token-secret}")
+    private String requestAccessTokenSecret;
+    @Value("${security.domain}")
+    private String securityDomain;
 
-    public String[] getCorsOrigins () {
+    public String[] getCorsOrigins() {
         if (StringUtils.isExist(this.corsOrigins)) {
             return this.corsOrigins.split(",");
         }
-        return new String[] {};
+        return new String[]{};
     }
 
-    public String[] getCorsMethods () {
+    public String[] getCorsMethods() {
         if (StringUtils.isExist(this.corsMethods)) {
             return this.corsMethods.split(",");
         }
-        return new String[] {};
+        return new String[]{};
     }
-
-    @Value("${security.jwt.access-token-secret}")
-    private String accessTokenSecret;
-
-    @Value("${security.jwt.refresh-token-secret}")
-    private String refreshTokenSecret;
-
-    @Value("${security.jwt.request-access-token-secret}")
-    private String requestAccessTokenSecret;
-
-    @Value("${security.domain}")
-    private String securityDomain;
 }

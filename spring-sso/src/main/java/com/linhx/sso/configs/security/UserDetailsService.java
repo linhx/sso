@@ -30,7 +30,7 @@ public class UserDetailsService implements org.springframework.security.core.use
             throw new UsernameNotFoundException("error.login.not-found");
         }
         // remove sensitive info
-        User cloneUser = new User();
+        UserDetail cloneUser = new UserDetail();
         cloneUser.setId(user.getId());
         cloneUser.setUuid(user.getUuid());
         cloneUser.setActive(user.isActive());
@@ -42,6 +42,6 @@ public class UserDetailsService implements org.springframework.security.core.use
                 true,
                 true,
                 true,
-                this.tokenService.getAuthorities());
+                this.tokenService.getAuthorities(cloneUser));
     }
 }

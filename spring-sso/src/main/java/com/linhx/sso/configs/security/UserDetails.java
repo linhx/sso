@@ -12,15 +12,15 @@ import java.util.Collection;
  */
 @Getter
 public class UserDetails extends org.springframework.security.core.userdetails.User {
-    private User user;
+    private UserDetail user;
 
-    public UserDetails(User user, String username, String password,
+    public UserDetails(UserDetail user, String username, String password,
                        Collection<? extends GrantedAuthority> authorities) {
         super(username, password, authorities);
         this.user = user;
     }
 
-    public UserDetails(User user, String username,
+    public UserDetails(UserDetail user, String username,
                        String password, boolean enabled, boolean accountNonExpired,
                        boolean credentialsNonExpired, boolean accountNonLocked,
                        Collection<? extends GrantedAuthority> authorities) {
