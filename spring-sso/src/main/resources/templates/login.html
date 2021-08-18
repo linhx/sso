@@ -10,6 +10,19 @@
             width: 90%;
             margin: auto;
           }
+          .btn-refresh-wrapper {
+            width: 40px;
+            height: 42px;
+            padding: 2px;
+          }
+          .btn-refresh {
+            width: 100%;
+            background-image: url(/assets/img/refresh.svg);
+            background-size: cover;
+            height: 0;
+            padding: 0;
+            padding-bottom: 92%;
+          }
         </style>
         <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     </head>
@@ -19,27 +32,48 @@
             <input id="username" class="form-control my-2" name="username" placeholder="Username" />
             <input id="password" class="form-control my-2" name="password" type="password" placeholder="Password" />
 
+            <img id="captcha-img" /> <div id="btn-refresh-captcha" class="btn-refresh-wrapper btn btn-light"><div class="btn-refresh"></div></div>
+            <input id="captcha" class="form-control my-2" name="captcha" placeholder="CAPTCHA" />
             <button class="btn btn-info my-2" type="submit">Login</button>
         </form>
 
-        <script>
+        <script th:inline="javascript">
             let $form = document.getElementById("login");
             let $username = document.getElementById("username");
             let $password = document.getElementById("password");
+            let $captcha = document.getElementById("captcha");
+            let $captchaImg = document.getElementById("captcha-img");
+            let $btnRefreshCaptcha = document.getElementById("btn-refresh-captcha");
 
             $form.addEventListener("submit", (e) => {
                 e.preventDefault();
-                axios.post('/login', {
+                axios.post('[(${T(com.linhx.sso.constants.Paths).LOGIN})]', {
                     username: $username.value,
-                    password: $password.value
+                    password: $password.value,
+                    captcha: $captcha.value
                 }).then(() => {
                     const callbackUrl = new URL(window.location.href).searchParams.get('callbackUrl') ||
                         '/home';
                     window.location.href = callbackUrl;
                 }).catch(e => {
-                    alert('Wrong username or password'); // TODO
+                    getCaptcha();
+                    if (e.response.data.messages.some(msg => msg.messageCode == 'error.login.invalid-captcha')) { // TODO refactor
+                        alert('Invalid captcha'); // TODO
+                    } else {
+                        alert('Wrong username or password'); // TODO
+                    }
                 });
             });
+
+            function getCaptcha() {
+                axios.get('[(${T(com.linhx.sso.constants.Paths).CAPTCHA_LOGIN})]').then((res) => {
+                    $captchaImg.src = "data:image/png;base64," + res.data;
+                }).catch(e => {
+                    alert('Can\'t load captcha');
+                });
+            }
+            getCaptcha();
+            $btnRefreshCaptcha.addEventListener('click', getCaptcha);
         </script>
    </body>
 </html>

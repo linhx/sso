@@ -1,4 +1,7 @@
 FROM adoptopenjdk/openjdk11:alpine
+# fix bug NPE fontconfig
+RUN apk add --no-cache fontconfig ttf-dejavu
+ENV LD_LIBRARY_PATH /usr/lib
 ARG USER=linhx
 ARG GROUP=linhx.com
 RUN set -x && \

@@ -1,13 +1,16 @@
 package com.linhx.sso.configs.security;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linhx.exceptions.message.Message;
 import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.constants.SecurityConstants;
+import com.linhx.sso.controller.CaptchaSession;
 import com.linhx.sso.controller.dtos.response.MessagesDto;
+import com.linhx.sso.exceptions.InvalidCaptchaException;
 import com.linhx.sso.exceptions.LoginInfoWrongException;
-import com.linhx.sso.services.token.TokenService;
 import com.linhx.sso.services.UserService;
+import com.linhx.sso.services.token.TokenService;
 import com.linhx.utils.JwtUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -30,13 +33,14 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final TokenService tokenService;
     private final EnvironmentVariable env;
     private final UserService userService;
-    private final boolean postOnly = true;
+    private final CaptchaSession captchaSession;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AuthenticationFilter(AuthenticationManager authenticationManager,
                                 TokenService tokenService,
                                 UserService userService,
-                                EnvironmentVariable env) {
+                                EnvironmentVariable env, CaptchaSession captchaSession) {
+        this.captchaSession = captchaSession;
         this.setAuthenticationManager(authenticationManager);
         this.tokenService = tokenService;
         this.userService = userService;
@@ -45,39 +49,46 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 
     private LoginInfo obtainLoginInfo(HttpServletRequest request) {
         try {
-            return objectMapper.readValue(request.getInputStream(), LoginInfo.class);
+            var loginInfo = objectMapper.readValue(request.getInputStream(), LoginInfo.class);
+            String username = loginInfo.getUsername();
+            String password = loginInfo.getPassword();
+            if (username == null) {
+                username = "";
+            }
+            if (password == null) {
+                password = "";
+            }
+            username = username.trim();
+            loginInfo.setUsername(username);
+            loginInfo.setPassword(password);
+            return loginInfo;
         } catch (IOException e) {
             e.printStackTrace();
         }
         throw new LoginInfoWrongException("Can not extract login info (username, password)!");
     }
 
+    private void checkCaptcha(String captcha) {
+        var validCaptcha = this.captchaSession.compareAndInvalidateCaptchaLogin(captcha);
+        if (!validCaptcha) {
+            throw new InvalidCaptchaException("error.auth.invalidCaptcha");
+        }
+    }
+
     public Authentication authentication(HttpServletRequest request) {
-        if (postOnly && !request.getMethod().equals("POST")) {
+        if (!request.getMethod().equals("POST")) {
             throw new AuthenticationServiceException(
                     "Authentication method not supported: " + request.getMethod());
         }
         var loginInfo = this.obtainLoginInfo(request);
 
-        String username = loginInfo.getUsername();
-        String password = loginInfo.getPassword();
+        // check captcha
+        this.checkCaptcha(loginInfo.getCaptcha());
 
-        if (username == null) {
-            username = "";
-        }
-
-        if (password == null) {
-            password = "";
-        }
-
-        username = username.trim();
-
-        var authRequest = new UsernamePasswordAuthenticationToken(
-                username, password);
-
+        // authenticate
+        var authRequest = new UsernamePasswordAuthenticationToken(loginInfo.getUsername(), loginInfo.getPassword());
         // Allow subclasses to set the "details" property
         setDetails(request, authRequest);
-
         return this.getAuthenticationManager().authenticate(authRequest);
     }
 
@@ -125,6 +136,8 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             msg = "error.login.locked-account";
         } else if (failed instanceof DisabledException) {
             msg = "error.login.disabled-account";
+        } else if (failed instanceof InvalidCaptchaException) {
+            msg = "error.login.invalid-captcha";
         } else {
             msg = "error.login.cant-login";
         }
@@ -145,7 +158,9 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 class LoginInfo {
     private String username;
     private String password;
+    private String captcha;
 }
