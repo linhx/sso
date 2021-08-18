@@ -2,7 +2,6 @@ package com.linhx.sso.configs.security;
 
 import com.linhx.sso.constants.Paths;
 import com.linhx.sso.constants.SecurityConstants;
-import com.linhx.sso.entities.User;
 import com.linhx.utils.StringUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -39,7 +38,7 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
         chain.doFilter(request, response);
     }
 
-    private UsernamePasswordAuthenticationToken getAuthentication (HttpServletRequest request) {
+    private UsernamePasswordAuthenticationToken getAuthentication(HttpServletRequest request) {
         Cookie[] cookies = request.getCookies();
 
         String accessToken = null;

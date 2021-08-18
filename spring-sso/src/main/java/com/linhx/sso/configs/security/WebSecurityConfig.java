@@ -2,7 +2,6 @@ package com.linhx.sso.configs.security;
 
 import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.constants.Paths;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -16,12 +15,15 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Configuration
 @EnableWebSecurity
 public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
-    @Autowired
-    private UserDetailsService userDetailsService;
-    @Autowired
-    private TokenService tokenService;
-    @Autowired
-    private EnvironmentVariable env;
+    private final UserDetailsService userDetailsService;
+    private final TokenService tokenService;
+    private final EnvironmentVariable env;
+
+    public WebSecurityConfig(UserDetailsService userDetailsService, TokenService tokenService, EnvironmentVariable env) {
+        this.userDetailsService = userDetailsService;
+        this.tokenService = tokenService;
+        this.env = env;
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -30,12 +32,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
+        http.exceptionHandling().authenticationEntryPoint(new Http401UnauthorizedEntryPoint());
         // filter
         http.csrf().disable()
-            .cors().and()
-            .authorizeRequests()
-            .antMatchers(Paths.PUBLIC_PATHS).permitAll()
-            .anyRequest()
+                .cors().and()
+                .authorizeRequests()
+                .antMatchers(Paths.PUBLIC_PATHS).permitAll()
+                .anyRequest()
                 .authenticated()
                 .and()
                 .addFilter(new AuthenticationFilter(authenticationManager(), this.tokenService, this.env))

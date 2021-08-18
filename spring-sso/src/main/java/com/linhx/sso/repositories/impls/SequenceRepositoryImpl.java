@@ -4,7 +4,6 @@ import com.linhx.exceptions.BaseException;
 import com.linhx.exceptions.ResourceNotFoundException;
 import com.linhx.sso.entities.Sequence;
 import com.linhx.sso.repositories.SequenceRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Update;
 import org.springframework.stereotype.Repository;
@@ -15,8 +14,11 @@ import static org.springframework.data.mongodb.core.query.Query.query;
 
 @Repository
 public class SequenceRepositoryImpl implements SequenceRepository {
-    @Autowired
-    private MongoOperations mongoOperations;
+    private final MongoOperations mongoOperations;
+
+    public SequenceRepositoryImpl(MongoOperations mongoOperations) {
+        this.mongoOperations = mongoOperations;
+    }
 
     @Override
     public Long getNextSequence(String seqName) throws BaseException {

@@ -1,12 +1,13 @@
 package com.linhx.sso.configs.security;
 
-import com.linhx.sso.entities.User;
 import lombok.Getter;
 import org.springframework.security.core.GrantedAuthority;
 
 import java.util.Collection;
 
 /**
+ * Models core user information retrieved by a UserDetailsService.
+ *
  * @author linhx
  * @since 08/10/2020
  */

@@ -3,7 +3,6 @@ package com.linhx.sso.configs.security;
 import com.linhx.exceptions.BaseException;
 import com.linhx.sso.entities.User;
 import com.linhx.sso.services.UserService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
@@ -13,10 +12,13 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class UserDetailsService implements org.springframework.security.core.userdetails.UserDetailsService {
-    @Autowired
-    private UserService userService;
-    @Autowired
-    private TokenService tokenService;
+    private final UserService userService;
+    private final TokenService tokenService;
+
+    public UserDetailsService(UserService userService, TokenService tokenService) {
+        this.userService = userService;
+        this.tokenService = tokenService;
+    }
 
     @Override
     public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String username) {

@@ -4,7 +4,7 @@ import com.linhx.sso.entities.User;
 import lombok.*;
 
 /**
- * UserDetail
+ * User info use to generate token
  *
  * @author linhx
  * @since 17/08/2021
