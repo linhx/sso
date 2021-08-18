@@ -1,9 +1,9 @@
 package com.linhx.sso.services.impls;
 
 import com.linhx.exceptions.BaseException;
-import com.linhx.sso.configs.security.TokenService;
 import com.linhx.sso.configs.security.Tokens;
 import com.linhx.sso.configs.security.UserDetail;
+import com.linhx.sso.constants.Messages;
 import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.controller.dtos.request.AuthDto;
 import com.linhx.sso.controller.dtos.response.PrincipalDto;
@@ -11,6 +11,7 @@ import com.linhx.sso.exceptions.LoginInfoWrongException;
 import com.linhx.sso.services.AuthService;
 import com.linhx.sso.services.ClientApplicationService;
 import com.linhx.sso.services.UserService;
+import com.linhx.sso.services.token.TokenService;
 import com.linhx.utils.JwtUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
@@ -22,8 +23,6 @@ import org.springframework.security.authentication.DisabledException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import javax.naming.AuthenticationException;
-
 /**
  * AuthServiceImpl
  *
@@ -31,6 +30,7 @@ import javax.naming.AuthenticationException;
  * @since 08/11/2020
  */
 @Service
+@Transactional(rollbackFor = Throwable.class)
 public class AuthServiceImpl implements AuthService {
     private static final Logger logger = LoggerFactory.getLogger(AuthServiceImpl.class);
     private final ClientApplicationService clientApplicationService;
@@ -44,7 +44,7 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
-    public PrincipalDto auth(AuthDto dto) throws AuthenticationException, BaseException {
+    public PrincipalDto auth(AuthDto dto) throws BaseException {
         var clientAppOpt = this.clientApplicationService.findByClientIdAndSecret(dto.getClientId(), dto.getClientSecret());
         if (clientAppOpt.isEmpty()) {
             throw new LoginInfoWrongException("error.auth.clientAppDoesNotExist");
@@ -62,13 +62,14 @@ public class AuthServiceImpl implements AuthService {
 
     @Override
     @Transactional
-    public Tokens refresh(String refreshToken) throws AuthenticationException, BaseException {
+    public Tokens refresh(String refreshToken) {
         try {
             var refreshTokenDetails = this.tokenService.parseRefreshToken(refreshToken);
             synchronized (refreshTokenDetails.getId()) {
                 if (this.tokenService.isInvalid(refreshTokenDetails.getId())) {
-                    // TODO invalid the tokens issue by this refresh token
-                    throw new LoginInfoWrongException("error.refreshToken.invalidJwt");
+                    this.tokenService.invalidateByLoginHistoryId(refreshTokenDetails.getLh());
+                    logger.warn("user {}, history {} may be under attack", refreshTokenDetails.getUserId(), refreshTokenDetails.getLh());
+                    throw new LoginInfoWrongException("error.refreshToken.alreadyUsed");
                 }
 
                 var userOpt = this.userService.findById(refreshTokenDetails.getUserId());
@@ -79,10 +80,12 @@ public class AuthServiceImpl implements AuthService {
                 if (!user.isActive()) {
                     throw new DisabledException("error.refreshToken.userInactive");
                 }
-                var userDetails = UserDetail.fromEntity(user);
+                var userDetail = UserDetail.fromEntity(user);
 
-                JwtUtils.JwtResult refreshTokenResult = this.tokenService.generateRefreshToken(userDetails);
-                JwtUtils.JwtResult accessTokenResult = this.tokenService.generateAccessToken(userDetails,
+                JwtUtils.JwtResult refreshTokenResult = this.tokenService.generateRefreshToken(userDetail,
+                        refreshTokenDetails.getLh());
+                JwtUtils.JwtResult accessTokenResult = this.tokenService.generateAccessToken(userDetail,
+                        refreshTokenDetails.getLh(),
                         refreshTokenResult.getTokenId());
 
                 // invalidate the refresh token
@@ -95,24 +98,23 @@ public class AuthServiceImpl implements AuthService {
                 );
             }
         } catch (ExpiredJwtException e) {
-            logger.warn("Request to parse expired JWT:", e);
-            throw new LoginInfoWrongException("error.refreshToken.invalidJwt");
+            logger.warn("Request to parse expired JWT: {}", e.getMessage());
+            throw new LoginInfoWrongException(Messages.ERR_REFRESH_TOKEN_INVALID);
         } catch (UnsupportedJwtException e) {
-            logger.warn("Request to parse unsupported JWT:", e);
-            throw new LoginInfoWrongException("error.refreshToken.invalidJwt");
+            logger.warn("Request to parse unsupported JWT: {}", e.getMessage());
+            throw new LoginInfoWrongException(Messages.ERR_REFRESH_TOKEN_INVALID);
         } catch (MalformedJwtException e) {
-            logger.warn("Request to parse invalid JWT:", e);
-            throw new LoginInfoWrongException("error.refreshToken.invalidJwt");
+            logger.warn("Request to parse invalid JWT: {}", e.getMessage());
+            throw new LoginInfoWrongException(Messages.ERR_REFRESH_TOKEN_INVALID);
         } catch (SignatureException e) {
-            logger.warn("Request to parse WT with invalid signature:", e);
-            throw new LoginInfoWrongException("error.refreshToken.invalidJwt");
+            logger.warn("Request to parse WT with invalid signature: {}", e.getMessage());
+            throw new LoginInfoWrongException(Messages.ERR_REFRESH_TOKEN_INVALID);
         } catch (IllegalArgumentException e) {
-            logger.warn("Request to parse empty or null JWT:", e);
-            throw new LoginInfoWrongException("error.refreshToken.invalidJwt");
+            logger.warn("Request to parse empty or null JWT: {}", e.getMessage());
+            throw new LoginInfoWrongException(Messages.ERR_REFRESH_TOKEN_INVALID);
         } catch (Exception e) {
-            logger.warn("Exception JWT:", e);
-            throw new LoginInfoWrongException("error.refreshToken.invalidJwt");
+            logger.warn("Exception JWT: {}", e.getMessage());
+            throw new LoginInfoWrongException(Messages.ERR_REFRESH_TOKEN_INVALID);
         }
-
     }
 }

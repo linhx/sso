@@ -1,4 +1,4 @@
-package com.linhx.sso.configs.security;
+package com.linhx.sso.services.token;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,4 +21,8 @@ public class RefreshTokenDetail {
     private Long id;
     private Long userId;
     private Date expired;
+    /**
+     * Login history id
+     */
+    private Long lh;
 }

@@ -7,5 +7,9 @@ package com.linhx.sso.constants;
  * @since 26/01/2021
  */
 public class Messages {
-    public static final String ERR_GRANTACCESSTOKEN_INVALIDRAT = "error.grantAccessToken.invalidRat";
+    private Messages () {
+        throw new IllegalStateException("Constant class");
+    }
+
+    public static final String ERR_REFRESH_TOKEN_INVALID = "error.refreshToken.invalidJwt";
 }

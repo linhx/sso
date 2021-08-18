@@ -1,5 +1,6 @@
-package com.linhx.sso.configs.security;
+package com.linhx.sso.services.token;
 
+import com.linhx.sso.configs.security.UserDetail;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -27,4 +28,8 @@ public class TokenDetail {
     private Long rtId;
     private UserDetail user;
     private Date expired;
+    /**
+     * Login history id
+     */
+    private Long lh;
 }

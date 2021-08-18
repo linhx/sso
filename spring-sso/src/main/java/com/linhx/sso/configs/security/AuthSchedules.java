@@ -1,5 +1,6 @@
 package com.linhx.sso.configs.security;
 
+import com.linhx.sso.services.token.TokenService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.scheduling.annotation.Scheduled;

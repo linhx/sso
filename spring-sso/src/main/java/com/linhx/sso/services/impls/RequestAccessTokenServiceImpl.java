@@ -1,27 +1,15 @@
 package com.linhx.sso.services.impls;
 
 import com.linhx.exceptions.BaseException;
-import com.linhx.exceptions.BusinessException;
-import com.linhx.sso.configs.EnvironmentVariable;
-import com.linhx.sso.configs.security.TokenService;
-import com.linhx.sso.configs.security.Tokens;
-import com.linhx.sso.configs.security.UserDetail;
-import com.linhx.sso.constants.SecurityConstants;
+import com.linhx.exceptions.NotImplemented;
 import com.linhx.sso.controller.dtos.request.GrantAccessTokenDto;
 import com.linhx.sso.entities.RequestAccessToken;
 import com.linhx.sso.entities.User;
-import com.linhx.sso.repositories.ClientApplicationRepository;
 import com.linhx.sso.repositories.RequestAccessTokenRepository;
 import com.linhx.sso.services.RequestAccessTokenService;
-import com.linhx.sso.services.UserService;
-import com.linhx.utils.JwtUtils;
-import com.linhx.utils.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.util.UriComponents;
-import org.springframework.web.util.UriComponentsBuilder;
 
-import java.net.URL;
 import java.util.Optional;
 
 /**
@@ -33,51 +21,15 @@ import java.util.Optional;
 @Service
 @Transactional(rollbackFor = Throwable.class)
 public class RequestAccessTokenServiceImpl implements RequestAccessTokenService {
-    private final EnvironmentVariable env;
     private final RequestAccessTokenRepository requestAccessTokenRepository;
-    private final ClientApplicationRepository clientApplicationRepository;
-    private final UserService userService;
-    private final TokenService tokenService;
 
-    public RequestAccessTokenServiceImpl(EnvironmentVariable env,
-                                         RequestAccessTokenRepository requestAccessTokenRepository,
-                                         ClientApplicationRepository clientApplicationRepository,
-                                         UserService userService, TokenService tokenService) {
-        this.env = env;
+    public RequestAccessTokenServiceImpl(RequestAccessTokenRepository requestAccessTokenRepository) {
         this.requestAccessTokenRepository = requestAccessTokenRepository;
-        this.clientApplicationRepository = clientApplicationRepository;
-        this.userService = userService;
-        this.tokenService = tokenService;
     }
 
     @Override
     public String createRequestAccessTokenUrl(User user, String callbackUrlStr) throws Exception {
-        var callbackUrl = new URL(callbackUrlStr);
-        var clientApplicationOpt =
-                this.clientApplicationRepository.findByHost(callbackUrl.getHost());
-        if (clientApplicationOpt.isEmpty()) {
-            throw new BusinessException("error.createRat.clientAppNotFound");
-        }
-        var clientApplication = clientApplicationOpt.get();
-        var userOpt = this.userService.findByUuid(user.getUuid());
-        if (userOpt.isEmpty()) {
-            throw new BusinessException("error.createRat.userNotFound");
-        }
-        var request = this.requestAccessTokenRepository.create(userOpt.get().getId(),
-                clientApplication.getId());
-        var jwtResult = this.tokenService.generateToken(user.getId(),
-                token -> JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_RAT_UUID,
-                                request.getUuid()),
-                        this.env.getAccessTokenSecret(),
-                        SecurityConstants.REQUEST_TOKEN_EXPIRATION_SECONDS,
-                        token.getId()));
-
-        UriComponents uriComponents = UriComponentsBuilder
-                .fromUriString(clientApplication.getSignInUrl())
-                .queryParam(SecurityConstants.REQUEST_ACCESS_TOKEN, jwtResult.getToken())
-                .queryParam(SecurityConstants.CALLBACK, callbackUrlStr)
-                .build();
-        return uriComponents.toUriString();
+        throw new NotImplemented();
     }
 
     @Override
@@ -87,57 +39,11 @@ public class RequestAccessTokenServiceImpl implements RequestAccessTokenService 
 
     @Override
     public Object grantAccessToken(GrantAccessTokenDto dto) throws BaseException {
-        var clientAppOpt =
-                this.clientApplicationRepository.findByClientIdAndSecret(dto.getClientId(), dto.getClientSecret());
-        if (clientAppOpt.isEmpty()) {
-            throw new BusinessException("error.grantAccessToken.clientAppNotFound");
-        }
-        var clientApp = clientAppOpt.get();
-
-        String ratUuid;
-        try {
-            var ratClaims = JwtUtils.parse(dto.getRat(), this.env.getRequestAccessTokenSecret());
-            ratUuid = ratClaims.get(SecurityConstants.JWT_RAT_UUID, String.class);
-        } catch (Exception e) {
-            throw new BusinessException("error.grantAccessToken.invalidRat");
-        }
-        if (StringUtils.isEmpty(ratUuid)) {
-            throw new BusinessException("error.grantAccessToken.invalidRat");
-        }
-        var ratOpt = this.findValidByUuid(ratUuid);
-        if (ratOpt.isEmpty()) {
-            throw new BusinessException("error.grantAccessToken.ratDoesNotExist");
-        }
-        var rat = ratOpt.get();
-        if (!rat.getClientApplicationId().equals(clientApp.getId())) {
-            throw new BusinessException("error.grantAccessToken.ratDoesNotMatchClientApp");
-        }
-        var userOpt = this.userService.findById(rat.getUserId());
-        if (userOpt.isEmpty()) {
-            throw new BusinessException("error.grantAccessToken.userNotFound");
-        }
-        var user = userOpt.get();
-
-        try {
-            var userDetail = UserDetail.fromEntity(user);
-            var refreshTokenJwtResult = this.tokenService.generateRefreshToken(userDetail);
-            var accessTokenJwtResult = this.tokenService.generateAccessToken(UserDetail.fromEntity(user),
-                    refreshTokenJwtResult.getTokenId());
-
-            return new Tokens(accessTokenJwtResult.getToken(), accessTokenJwtResult.getExpired(),
-                    refreshTokenJwtResult.getToken(), refreshTokenJwtResult.getExpired());
-
-            // TODO return callback
-        } catch (Exception e) {
-            throw new BusinessException("error.grantAccessToken.cantCreateJwt");
-        } finally {
-            rat.setValid(false);
-            this.requestAccessTokenRepository.save(rat);
-        }
+        throw new NotImplemented();
     }
 
     @Override
-    public void deleteInvalidRequestsAccessToken() throws BaseException {
+    public void deleteInvalidRequestsAccessToken() {
         this.requestAccessTokenRepository.deleteInvalid();
     }
 }

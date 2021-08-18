@@ -2,11 +2,14 @@ package com.linhx.sso.configs.security;
 
 import com.linhx.sso.constants.Paths;
 import com.linhx.sso.constants.SecurityConstants;
+import com.linhx.sso.services.token.TokenService;
 import com.linhx.utils.StringUtils;
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.MalformedJwtException;
 import io.jsonwebtoken.UnsupportedJwtException;
 import io.jsonwebtoken.security.SignatureException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.AuthenticationException;
@@ -22,6 +25,7 @@ import java.io.IOException;
 import java.util.Objects;
 
 public class AuthorizationFilter extends BasicAuthenticationFilter {
+    private static final Logger cLogger = LoggerFactory.getLogger(AuthorizationFilter.class);
     private final TokenService tokenService;
 
     public AuthorizationFilter(AuthenticationManager authenticationManager, TokenService tokenService) {
@@ -52,27 +56,35 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
         if (StringUtils.isEmpty(accessToken)) return null;
         try {
             var tokenDetails = this.tokenService.parseAccessToken(accessToken);
-            return new UsernamePasswordAuthenticationToken(tokenDetails.getUser(), null, this.tokenService.getAuthorities(tokenDetails.getUser()));
+            var isInvalid = this.tokenService.isInvalid(tokenDetails.getId());
+            if (isInvalid) {
+                cLogger.warn("Blocked token {}", tokenDetails.getId());
+            } else {
+                return new UsernamePasswordAuthenticationToken(tokenDetails.getUser(),
+                        null,
+                        this.tokenService.getAuthorities(tokenDetails.getUser()));
+            }
         } catch (ExpiredJwtException e) {
-            logger.warn("Request to parse expired JWT:", e);
+            cLogger.warn("Request to parse expired JWT: {}", e.getMessage());
         } catch (UnsupportedJwtException e) {
-            logger.warn("Request to parse unsupported JWT:", e);
+            cLogger.warn("Request to parse unsupported JWT: {}", e.getMessage());
         } catch (MalformedJwtException e) {
-            logger.warn("Request to parse invalid JWT:", e);
+            cLogger.warn("Request to parse invalid JWT: {}", e.getMessage());
         } catch (SignatureException e) {
-            logger.warn("Request to parse WT with invalid signature:", e);
+            cLogger.warn("Request to parse WT with invalid signature: {}", e.getMessage());
         } catch (IllegalArgumentException e) {
-            logger.warn("Request to parse empty or null JWT:", e);
+            cLogger.warn("Request to parse empty or null JWT: {}", e.getMessage());
         } catch (Exception e) {
-            logger.warn("Wrong jwt:", e);
+            cLogger.warn("Wrong jwt: {}", e.getMessage());
         }
         return null;
     }
 
     @Override
-    protected void onUnsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException {
+    protected void onUnsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                                AuthenticationException failed) throws IOException {
         if (Paths.ACCOUNT.equals(request.getServletPath())) {
-            response.sendRedirect("/login"); // TODO callback url
+            response.sendRedirect(Paths.LOGIN); // TODO callback url
         } else {
             super.onUnsuccessfulAuthentication(request, response, failed);
         }

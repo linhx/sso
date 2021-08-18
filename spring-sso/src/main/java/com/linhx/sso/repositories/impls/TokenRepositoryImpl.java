@@ -17,8 +17,11 @@ interface TokenRepositoryMongoDb extends MongoRepository<Token, Long> {
     @Query(value = "{ isInvalid: true, expired: { $gte: new Date() } }", fields = "{ 'id' : 1 }")
     List<Token> findInvalidTokens();
 
-    @Query(value = "{ isInvalid: true, userId: ?0 }", fields = "{ 'id' : 1 }")
+    @Query(value = "{ isInvalid: false, userId: ?0 }", fields = "{ 'id' : 1 }")
     List<Token> findValidByUserId(Long userId);
+
+    @Query(value = "{ isInvalid: false, loginHistoryId: ?0 }", fields = "{ 'id' : 1 }")
+    List<Token> findValidByLoginHistoryId(Long loginHistoryId);
 
     @Query(value = "{ expired: { $lt: new Date() } }", fields = "{ 'id' : 1 }")
     List<Token> findExpiredTokens();
@@ -57,6 +60,12 @@ public class TokenRepositoryImpl implements TokenRepository {
     }
 
     @Override
+    public List<Long> findValidByLoginHistoryId(Long userId) {
+        return this.tokenRepositoryMongoDb.findValidByUserId(userId).stream()
+                .map(Token::getId).collect(Collectors.toList());
+    }
+
+    @Override
     public Optional<Token> findById(Long id) {
         return this.tokenRepositoryMongoDb.findById(id);
     }
@@ -65,6 +74,15 @@ public class TokenRepositoryImpl implements TokenRepository {
     public void invalidateByUserId(Long userId) {
         org.springframework.data.mongodb.core.query.Query query = new org.springframework.data.mongodb.core.query.Query();
         query.addCriteria(Criteria.where("userId").is(userId));
+        Update update = new Update();
+        update.set("isInvalid", true);
+        this.mongoOperations.updateMulti(query, update, Token.class);
+    }
+
+    @Override
+    public void invalidateByLoginHistoryId(Long loginHistoryId) {
+        org.springframework.data.mongodb.core.query.Query query = new org.springframework.data.mongodb.core.query.Query();
+        query.addCriteria(Criteria.where("loginHistoryId").is(loginHistoryId));
         Update update = new Update();
         update.set("isInvalid", true);
         this.mongoOperations.updateMulti(query, update, Token.class);

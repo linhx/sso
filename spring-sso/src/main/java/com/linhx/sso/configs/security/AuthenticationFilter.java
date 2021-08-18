@@ -6,6 +6,8 @@ import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.controller.dtos.response.MessagesDto;
 import com.linhx.sso.exceptions.LoginInfoWrongException;
+import com.linhx.sso.services.token.TokenService;
+import com.linhx.sso.services.UserService;
 import com.linhx.utils.JwtUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -27,14 +29,17 @@ import java.io.PrintWriter;
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final TokenService tokenService;
     private final EnvironmentVariable env;
+    private final UserService userService;
     private final boolean postOnly = true;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AuthenticationFilter(AuthenticationManager authenticationManager,
                                 TokenService tokenService,
+                                UserService userService,
                                 EnvironmentVariable env) {
         this.setAuthenticationManager(authenticationManager);
         this.tokenService = tokenService;
+        this.userService = userService;
         this.env = env;
     }
 
@@ -88,8 +93,13 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
                                             Authentication authResult) {
         try {
             var userDetails = (UserDetails) authResult.getPrincipal();
-            JwtUtils.JwtResult refreshTokenResult = this.tokenService.generateRefreshToken(userDetails.getUser());
-            JwtUtils.JwtResult accessTokenResult = this.tokenService.generateAccessToken(userDetails.getUser(), refreshTokenResult.getTokenId());
+            var user = userDetails.getUser();
+            var history = this.userService.createLoginHistory(user.getId());
+            JwtUtils.JwtResult refreshTokenResult = this.tokenService.generateRefreshToken(userDetails.getUser(),
+                    history.getId());
+            JwtUtils.JwtResult accessTokenResult = this.tokenService.generateAccessToken(userDetails.getUser(),
+                    history.getId(),
+                    refreshTokenResult.getTokenId());
 
             var cookieAccessToken = new Cookie(SecurityConstants.COOKIE_ACCESS_TOKEN, accessTokenResult.getToken());
             cookieAccessToken.setHttpOnly(true);

@@ -2,6 +2,7 @@ package com.linhx.sso.configs.security;
 
 import com.linhx.exceptions.BaseException;
 import com.linhx.sso.entities.User;
+import com.linhx.sso.services.token.TokenService;
 import com.linhx.sso.services.UserService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
