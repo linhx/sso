@@ -3,6 +3,7 @@ package com.linhx.sso.configs.security;
 import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.constants.Paths;
 import com.linhx.sso.controller.CaptchaSession;
+import com.linhx.sso.services.loginattempt.LoginAttemptService;
 import com.linhx.sso.services.token.TokenService;
 import com.linhx.sso.services.UserService;
 import org.springframework.context.annotation.Bean;
@@ -21,15 +22,17 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final TokenService tokenService;
     private final UserService userService;
+    private final LoginAttemptService loginAttemptService;
     private final EnvironmentVariable env;
     private final CaptchaSession captchaSession;
 
     public WebSecurityConfig(UserDetailsService userDetailsService, TokenService tokenService,
-                             UserService userService, EnvironmentVariable env,
-                             CaptchaSession captchaSession) {
+                             UserService userService, LoginAttemptService loginAttemptService,
+                             EnvironmentVariable env, CaptchaSession captchaSession) {
         this.userDetailsService = userDetailsService;
         this.tokenService = tokenService;
         this.userService = userService;
+        this.loginAttemptService = loginAttemptService;
         this.env = env;
         this.captchaSession = captchaSession;
     }
@@ -53,6 +56,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .addFilter(new AuthenticationFilter(authenticationManager(), this.tokenService,
                         this.userService,
                         this.env,
+                        this.loginAttemptService,
                         this.captchaSession))
                 .addFilter(new AuthorizationFilter(authenticationManager(), this.tokenService))
                 .sessionManagement()

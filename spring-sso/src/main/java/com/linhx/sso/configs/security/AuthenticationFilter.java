@@ -2,6 +2,7 @@ package com.linhx.sso.configs.security;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.linhx.exceptions.BaseException;
 import com.linhx.exceptions.message.Message;
 import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.constants.SecurityConstants;
@@ -10,12 +11,16 @@ import com.linhx.sso.controller.dtos.response.MessagesDto;
 import com.linhx.sso.exceptions.InvalidCaptchaException;
 import com.linhx.sso.exceptions.LoginInfoWrongException;
 import com.linhx.sso.services.UserService;
+import com.linhx.sso.services.loginattempt.LoginAttemptService;
 import com.linhx.sso.services.token.TokenService;
+import com.linhx.sso.utils.HttpUtils;
 import com.linhx.utils.JwtUtils;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -30,16 +35,20 @@ import java.io.IOException;
 import java.io.PrintWriter;
 
 public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
+    private static final Logger logger = LoggerFactory.getLogger(AuthenticationFilter.class);
+
     private final TokenService tokenService;
     private final EnvironmentVariable env;
     private final UserService userService;
+    private final LoginAttemptService loginAttemptService;
     private final CaptchaSession captchaSession;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AuthenticationFilter(AuthenticationManager authenticationManager,
                                 TokenService tokenService,
                                 UserService userService,
-                                EnvironmentVariable env, CaptchaSession captchaSession) {
+                                EnvironmentVariable env, LoginAttemptService loginAttemptService, CaptchaSession captchaSession) {
+        this.loginAttemptService = loginAttemptService;
         this.captchaSession = captchaSession;
         this.setAuthenticationManager(authenticationManager);
         this.tokenService = tokenService;
@@ -65,7 +74,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        throw new LoginInfoWrongException("Can not extract login info (username, password)!");
+        throw new LoginInfoWrongException("error.login.cantObtainLoginInfo");
     }
 
     private void checkCaptcha(String captcha) {
@@ -75,12 +84,22 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         }
     }
 
+    private void checkExceededLoginAttempt(String ip) {
+        var valid = this.loginAttemptService.check(ip);
+        if (!valid) {
+            throw new LoginInfoWrongException("error.login.loginFailTooMuch");
+        }
+    }
+
     public Authentication authentication(HttpServletRequest request) {
         if (!request.getMethod().equals("POST")) {
             throw new AuthenticationServiceException(
                     "Authentication method not supported: " + request.getMethod());
         }
         var loginInfo = this.obtainLoginInfo(request);
+
+        // check exceeded login attempt fail
+        this.checkExceededLoginAttempt(HttpUtils.getClientIp(request));
 
         // check captcha
         this.checkCaptcha(loginInfo.getCaptcha());
@@ -130,6 +149,12 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     protected void unsuccessfulAuthentication(HttpServletRequest request,
                                               HttpServletResponse response, AuthenticationException failed)
             throws IOException {
+        try {
+            this.loginAttemptService.attemptFailed(HttpUtils.getClientIp(request));
+        } catch (BaseException e) {
+            logger.error("Can't save login attempt fail");
+        }
+
         SecurityContextHolder.clearContext();
         String msg;
         if (failed instanceof LockedException) {
@@ -138,6 +163,8 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             msg = "error.login.disabled-account";
         } else if (failed instanceof InvalidCaptchaException) {
             msg = "error.login.invalid-captcha";
+        } else if (failed instanceof LoginInfoWrongException) {
+            msg = failed.getMessage();
         } else {
             msg = "error.login.cant-login";
         }

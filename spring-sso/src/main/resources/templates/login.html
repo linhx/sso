@@ -34,7 +34,7 @@
 
             <img id="captcha-img" /> <div id="btn-refresh-captcha" class="btn-refresh-wrapper btn btn-light"><div class="btn-refresh"></div></div>
             <input id="captcha" class="form-control my-2" name="captcha" placeholder="CAPTCHA" />
-            <button class="btn btn-info my-2" type="submit">Login</button>
+            <button class="btn btn-info my-2" type="submit">Login</button> <span id="message"></span>
         </form>
 
         <script th:inline="javascript">
@@ -44,6 +44,7 @@
             let $captcha = document.getElementById("captcha");
             let $captchaImg = document.getElementById("captcha-img");
             let $btnRefreshCaptcha = document.getElementById("btn-refresh-captcha");
+            let $message = document.getElementById("message");
 
             $form.addEventListener("submit", (e) => {
                 e.preventDefault();
@@ -57,11 +58,8 @@
                     window.location.href = callbackUrl;
                 }).catch(e => {
                     getCaptcha();
-                    if (e.response.data.messages.some(msg => msg.messageCode == 'error.login.invalid-captcha')) { // TODO refactor
-                        alert('Invalid captcha'); // TODO
-                    } else {
-                        alert('Wrong username or password'); // TODO
-                    }
+                    const msg = "<div>" + e.response.data.messages.map(e => e.messageCode).join("</div><div>") + "</div>";
+                    $message.innerHTML = msg;
                 });
             });
 

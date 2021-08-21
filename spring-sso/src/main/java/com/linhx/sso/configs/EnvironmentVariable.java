@@ -25,6 +25,10 @@ public class EnvironmentVariable {
     private String requestAccessTokenSecret;
     @Value("${security.domain}")
     private String securityDomain;
+    @Value("${security.login-attempts.failed-allowed}")
+    private Integer securityLoginAttemptsFailedAllowed;
+    @Value("${security.login-attempts.time-blocking}")
+    private Integer securityLoginAttemptsTimeBlocking;
 
     public String[] getCorsOrigins() {
         if (StringUtils.isExist(this.corsOrigins)) {

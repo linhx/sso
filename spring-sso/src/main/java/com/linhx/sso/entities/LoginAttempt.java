@@ -6,32 +6,29 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.annotation.Transient;
-import org.springframework.data.mongodb.core.index.Indexed;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 import java.util.Date;
 
 /**
- * RequestAccessToken
+ * LoginAttempt
  *
  * @author linhx
- * @since 08/11/2020
+ * @since 21/08/2021
  */
 @NoArgsConstructor
 @AllArgsConstructor
 @Getter
 @Setter
 @Document
-public class RequestAccessToken extends Base {
+public class LoginAttempt extends Base {
     @Transient
-    public static final String SEQ_NAME = RequestAccessToken.class.getName();
+    public static final String SEQ_NAME = Token.class.getName();
 
     @Id
     private Long id;
-    @Indexed(unique = true)
-    private String uuid;
-    private Long userId;
-    private Long clientApplicationId;
-    private Date expired;
-    private boolean isValid;
+
+    private String ip;
+    private Integer times;
+    private Date at;
 }
