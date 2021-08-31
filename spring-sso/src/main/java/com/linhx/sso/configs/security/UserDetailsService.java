@@ -33,10 +33,7 @@ public class UserDetailsService implements org.springframework.security.core.use
             throw new UsernameNotFoundException("error.login.not-found");
         }
         // remove sensitive info
-        UserDetail cloneUser = new UserDetail();
-        cloneUser.setId(user.getId());
-        cloneUser.setUuid(user.getUuid());
-        cloneUser.setActive(user.isActive());
+        var cloneUser = UserDetail.fromEntity(user);
 
         return new UserDetails(cloneUser,
                 user.getUsername(),

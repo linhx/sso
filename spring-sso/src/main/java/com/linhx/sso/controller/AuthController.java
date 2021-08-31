@@ -2,6 +2,7 @@ package com.linhx.sso.controller;
 
 import com.linhx.exceptions.BaseException;
 import com.linhx.sso.configs.EnvironmentVariable;
+import com.linhx.sso.configs.security.UserDetail;
 import com.linhx.sso.constants.Pages;
 import com.linhx.sso.constants.Paths;
 import com.linhx.sso.constants.SecurityConstants;
@@ -10,6 +11,7 @@ import com.linhx.sso.controller.dtos.request.GrantAccessTokenDto;
 import com.linhx.sso.entities.User;
 import com.linhx.sso.services.AuthService;
 import com.linhx.sso.services.RequestAccessTokenService;
+import com.linhx.sso.services.token.TokenDetail;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -79,5 +81,11 @@ public class AuthController {
 
         response.addCookie(cookieAccessToken);
         response.addCookie(cookieRefreshToken);
+    }
+
+    @GetMapping(Paths.PROFILE)
+    @ResponseBody
+    public Object getProfile(@AuthenticationPrincipal UserDetail principal) {
+        return principal;
     }
 }
