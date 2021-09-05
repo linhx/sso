@@ -48,7 +48,7 @@
 
             $form.addEventListener("submit", (e) => {
                 e.preventDefault();
-                axios.post('[(${T(com.linhx.sso.constants.Paths).LOGIN})]', {
+                axios.post('/login', {
                     username: $username.value,
                     password: $password.value,
                     captcha: $captcha.value
@@ -64,7 +64,7 @@
             });
 
             function getCaptcha() {
-                axios.get('[(${T(com.linhx.sso.constants.Paths).CAPTCHA_LOGIN})]').then((res) => {
+                axios.get('/captcha-login').then((res) => {
                     $captchaImg.src = "data:image/png;base64," + res.data;
                 }).catch(e => {
                     alert('Can\'t load captcha');
