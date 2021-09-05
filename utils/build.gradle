@@ -1,5 +1,5 @@
 plugins {
-    id 'java'
+    id 'java-library'
 }
 
 group 'com.linhx'
@@ -10,10 +10,10 @@ repositories {
 }
 
 dependencies {
-    compileOnly 'org.projectlombok:lombok:1.18.14'
-    annotationProcessor 'org.projectlombok:lombok:1.18.14'
-    testCompile group: 'junit', name: 'junit', version: '4.12'
-    compile 'io.jsonwebtoken:jjwt-api:0.11.2'
-    runtime 'io.jsonwebtoken:jjwt-impl:0.11.2',
+    compileOnly 'org.projectlombok:lombok:1.18.20'
+    annotationProcessor 'org.projectlombok:lombok:1.18.20'
+    testImplementation 'junit:junit:4.13.2'
+    api 'io.jsonwebtoken:jjwt-api:0.11.2'
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.2',
             'io.jsonwebtoken:jjwt-jackson:0.11.2'
 }
