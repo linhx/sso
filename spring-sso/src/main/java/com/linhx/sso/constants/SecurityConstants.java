@@ -13,6 +13,7 @@ public class SecurityConstants {
     public static final String JWT_USERNAME = "username";
     public static final String JWT_REFRESH_TOKEN_ID = "rt_id";
     public static final String JWT_LOGIN_HISTORY_ID = "lh";
+    public static final String JWT_LOGOUT_BY_LOGIN_HIS_SCHEDULER_ID = "llhs";
 
     public static final int TOKEN_EXPIRATION_SECONDS = 30 * 60; // 30 minutes
     public static final int REQUEST_TOKEN_EXPIRATION_SECONDS = 10 * 60; // 3 minutes
@@ -20,4 +21,5 @@ public class SecurityConstants {
 
     public static final String COOKIE_ACCESS_TOKEN = "at";
     public static final String COOKIE_REFRESH_TOKEN = "rt";
+    public static final String COOKIE_LOGOUT_BY_LH_SCHEDULER_ID = "llhs";
 }

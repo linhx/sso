@@ -27,6 +27,7 @@ services:
       SECURITY_DOMAIN: linhx.local
       ACCESS_TOKEN_SECRET: access_token_keys_used_with_HMAC-SHA_algorithms_must_have_a_size_greater_than_or_equal_256_bits
       REFRESH_TOKEN_SECRET: refresh_token_keys_used_with_HMAC-SHA_algorithms_must_have_a_size_greater_than_or_equal_256_bits
+      LLHS_SECRET: llhs_keys_used_with_HMAC-SHA_algorithms_must_have_a_size_greater_than_or_equal_256_bits
       REQUEST_ACCESS_TOKEN_SECRET: request_access_token_keys_used_with_HMAC-SHA_algorithms_must_have_a_size_greater_than_or_equal_256_bits
       DATABASE_HOST: mongo
       DATABASE_USER: linhx

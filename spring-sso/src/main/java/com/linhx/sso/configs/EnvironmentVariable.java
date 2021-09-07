@@ -20,6 +20,8 @@ public class EnvironmentVariable {
     @Value("${security.jwt.access-token-secret}")
     private String accessTokenSecret;
     @Value("${security.jwt.refresh-token-secret}")
+    private String llhsSecret;
+    @Value("${security.jwt.refresh-token-secret}")
     private String refreshTokenSecret;
     @Value("${security.jwt.request-access-token-secret}")
     private String requestAccessTokenSecret;

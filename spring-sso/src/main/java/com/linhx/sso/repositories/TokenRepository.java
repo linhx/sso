@@ -15,7 +15,7 @@ public interface TokenRepository {
     Token save(Token token);
     List<Long> findInvalidIds();
     List<Long> findValidByUserId(Long userId);
-    List<Long> findValidByLoginHistoryId(Long userId);
+    List<Long> findValidByLoginHistoryId(Long loginHistoryId);
     Optional<Token> findById(Long id);
     void invalidateByUserId(Long userId);
     void invalidateByLoginHistoryId(Long userId);

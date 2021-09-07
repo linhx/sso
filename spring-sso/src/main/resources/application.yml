@@ -11,6 +11,7 @@ security:
   jwt:
     access-token-secret: ${ACCESS_TOKEN_SECRET}
     refresh-token-secret: ${REFRESH_TOKEN_SECRET}
+    llhs-secret: ${LLHS_SECRET}
     request-access-token-secret: ${REQUEST_ACCESS_TOKEN_SECRET}
   domain: ${SECURITY_DOMAIN}
   login-attempts:

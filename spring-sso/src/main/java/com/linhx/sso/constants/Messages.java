@@ -12,4 +12,5 @@ public class Messages {
     }
 
     public static final String ERR_REFRESH_TOKEN_INVALID = "error.refreshToken.invalidJwt";
+    public static final String ERR_TOKEN_CANT_BE_GENERATED = "error.token.cantBeGenerated";
 }

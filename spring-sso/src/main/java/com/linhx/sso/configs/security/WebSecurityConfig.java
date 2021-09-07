@@ -3,6 +3,7 @@ package com.linhx.sso.configs.security;
 import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.constants.Paths;
 import com.linhx.sso.controller.CaptchaSession;
+import com.linhx.sso.services.AuthService;
 import com.linhx.sso.services.loginattempt.LoginAttemptService;
 import com.linhx.sso.services.token.TokenService;
 import com.linhx.sso.services.UserService;
@@ -27,16 +28,19 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final UserDetailsService userDetailsService;
     private final TokenService tokenService;
     private final UserService userService;
+    private final AuthService authService;
     private final LoginAttemptService loginAttemptService;
     private final EnvironmentVariable env;
     private final CaptchaSession captchaSession;
 
     public WebSecurityConfig(UserDetailsService userDetailsService, TokenService tokenService,
-                             UserService userService, LoginAttemptService loginAttemptService,
+                             UserService userService, AuthService authService,
+                             LoginAttemptService loginAttemptService,
                              EnvironmentVariable env, CaptchaSession captchaSession) {
         this.userDetailsService = userDetailsService;
         this.tokenService = tokenService;
         this.userService = userService;
+        this.authService = authService;
         this.loginAttemptService = loginAttemptService;
         this.env = env;
         this.captchaSession = captchaSession;
@@ -63,7 +67,10 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         this.env,
                         this.loginAttemptService,
                         this.captchaSession))
-                .addFilter(new AuthorizationFilter(authenticationManager(), this.tokenService))
+                .addFilter(new AuthorizationFilter(authenticationManager(),
+                        this.tokenService,
+                        this.authService,
+                        this.env))
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }

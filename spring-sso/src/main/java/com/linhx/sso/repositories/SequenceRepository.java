@@ -1,6 +1,6 @@
 package com.linhx.sso.repositories;
 
-import com.linhx.exceptions.BaseException;
+import com.linhx.sso.exceptions.SequenceException;
 
 /**
  * SequenceRepository
@@ -9,5 +9,5 @@ import com.linhx.exceptions.BaseException;
  * @since 12/11/2020
  */
 public interface SequenceRepository {
-    Long getNextSequence(String seqName) throws BaseException;
+    Long getNextSequence(String seqName) throws SequenceException;
 }

@@ -3,6 +3,7 @@ package com.linhx.sso.repositories.impls;
 import com.linhx.exceptions.BaseException;
 import com.linhx.exceptions.ResourceNotFoundException;
 import com.linhx.sso.entities.Sequence;
+import com.linhx.sso.exceptions.SequenceException;
 import com.linhx.sso.repositories.SequenceRepository;
 import org.springframework.data.mongodb.core.MongoOperations;
 import org.springframework.data.mongodb.core.query.Update;
@@ -21,7 +22,7 @@ public class SequenceRepositoryImpl implements SequenceRepository {
     }
 
     @Override
-    public Long getNextSequence(String seqName) throws BaseException {
+    public Long getNextSequence(String seqName) throws SequenceException {
         var sequence = mongoOperations.findAndModify(
                 query(where("seqName").is(seqName)),
                 new Update().inc("seq", 1),
@@ -31,6 +32,6 @@ public class SequenceRepositoryImpl implements SequenceRepository {
         if (sequence != null) {
             return sequence.getSeq();
         }
-        throw new ResourceNotFoundException(String.format("sequence %s not found", seqName));
+        throw new SequenceException(String.format("sequence %s not found", seqName));
     }
 }

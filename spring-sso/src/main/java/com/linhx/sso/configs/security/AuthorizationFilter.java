@@ -1,7 +1,9 @@
 package com.linhx.sso.configs.security;
 
+import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.constants.Paths;
 import com.linhx.sso.constants.SecurityConstants;
+import com.linhx.sso.services.AuthService;
 import com.linhx.sso.services.token.TokenService;
 import com.linhx.utils.StringUtils;
 import io.jsonwebtoken.ExpiredJwtException;
@@ -27,16 +29,48 @@ import java.util.Objects;
 public class AuthorizationFilter extends BasicAuthenticationFilter {
     private static final Logger cLogger = LoggerFactory.getLogger(AuthorizationFilter.class);
     private final TokenService tokenService;
+    private final AuthService authService;
+    private final EnvironmentVariable env;
 
-    public AuthorizationFilter(AuthenticationManager authenticationManager, TokenService tokenService) {
+    public AuthorizationFilter(AuthenticationManager authenticationManager,
+                               TokenService tokenService,
+                               AuthService authService,
+                               EnvironmentVariable env) {
         super(authenticationManager);
         this.tokenService = tokenService;
+        this.authService = authService;
+        this.env = env;
+    }
+
+    private void cancelLogoutByLoginHistoryScheduler(HttpServletRequest request, HttpServletResponse response) {
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (SecurityConstants.COOKIE_LOGOUT_BY_LH_SCHEDULER_ID.equals(cookie.getName())) {
+                    var llhs = cookie.getValue();
+                    if (StringUtils.isExist(llhs)) {
+                        try {
+                            var llhsId = this.authService.parseLlhsJwt(llhs);
+                            this.authService.cancelLogoutByLoginHistoryScheduler(llhsId);
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                        cookie.setMaxAge(0);
+                        cookie.setValue(null);
+                        cookie.setHttpOnly(true);
+                        cookie.setDomain(this.env.getSecurityDomain());
+                        response.addCookie(cookie);
+                    }
+                }
+            }
+        }
     }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
         UsernamePasswordAuthenticationToken authentication = this.getAuthentication(request);
         if (!Objects.isNull(authentication)) {
+            this.cancelLogoutByLoginHistoryScheduler(request, response); // TODO refactoring
             SecurityContextHolder.getContext().setAuthentication(authentication);
         }
         chain.doFilter(request, response);

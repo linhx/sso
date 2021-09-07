@@ -1,6 +1,5 @@
 package com.linhx.sso.repositories.impls;
 
-import com.linhx.exceptions.BaseException;
 import com.linhx.sso.entities.User;
 import com.linhx.sso.repositories.UserRepository;
 import org.springframework.data.mongodb.repository.MongoRepository;
@@ -31,17 +30,17 @@ public class UserRepositoryImpl implements UserRepository {
     }
 
     @Override
-    public Optional<User> findByUsername(String username) throws BaseException {
+    public Optional<User> findByUsername(String username) {
         return this.userRepositoryMongoDb.findByUsername(username);
     }
 
     @Override
-    public Optional<User> findById(Long id) throws BaseException {
+    public Optional<User> findById(Long id) {
         return this.userRepositoryMongoDb.findById(id);
     }
 
     @Override
-    public Optional<User> findByUuid(String uuid) throws BaseException {
+    public Optional<User> findByUuid(String uuid) {
         return this.userRepositoryMongoDb.findByUuid(uuid);
     }
 }

@@ -33,17 +33,17 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Optional<User> findByUsername(String username) throws BaseException {
+    public Optional<User> findByUsername(String username) {
         return this.userRepository.findByUsername(username);
     }
 
     @Override
-    public Optional<User> findById(Long id) throws BaseException {
+    public Optional<User> findById(Long id) {
         return this.userRepository.findById(id);
     }
 
     @Override
-    public Optional<User> findByUuid(String uuid) throws BaseException {
+    public Optional<User> findByUuid(String uuid) {
         return this.userRepository.findByUuid(uuid);
     }
 

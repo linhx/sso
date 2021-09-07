@@ -1,9 +1,7 @@
 package com.linhx.sso.configs.security;
 
-import com.linhx.exceptions.BaseException;
-import com.linhx.sso.entities.User;
-import com.linhx.sso.services.token.TokenService;
 import com.linhx.sso.services.UserService;
+import com.linhx.sso.services.token.TokenService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 
@@ -23,12 +21,7 @@ public class UserDetailsService implements org.springframework.security.core.use
 
     @Override
     public org.springframework.security.core.userdetails.UserDetails loadUserByUsername(String username) {
-        User user = null;
-        try {
-            user = this.userService.findByUsername(username).orElse(null);
-        } catch (BaseException e) {
-            e.printStackTrace();
-        }
+        var user = this.userService.findByUsername(username).orElse(null);
         if (user == null) {
             throw new UsernameNotFoundException("error.login.not-found");
         }

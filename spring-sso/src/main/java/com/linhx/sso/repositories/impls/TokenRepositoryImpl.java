@@ -25,6 +25,9 @@ interface TokenRepositoryMongoDb extends MongoRepository<Token, Long> {
 
     @Query(value = "{ expired: { $lt: new Date() } }", fields = "{ 'id' : 1 }")
     List<Token> findExpiredTokens();
+
+    @Query(value = "{'expired':{$lt: new Date()}}", delete = true)
+    long deleteInvalid();
 }
 
 /**
@@ -60,8 +63,8 @@ public class TokenRepositoryImpl implements TokenRepository {
     }
 
     @Override
-    public List<Long> findValidByLoginHistoryId(Long userId) {
-        return this.tokenRepositoryMongoDb.findValidByUserId(userId).stream()
+    public List<Long> findValidByLoginHistoryId(Long loginHistoryId) {
+        return this.tokenRepositoryMongoDb.findValidByLoginHistoryId(loginHistoryId).stream()
                 .map(Token::getId).collect(Collectors.toList());
     }
 
@@ -95,8 +98,6 @@ public class TokenRepositoryImpl implements TokenRepository {
 
     @Override
     public void deleteExpiredTokens() {
-        org.springframework.data.mongodb.core.query.Query q
-                = new org.springframework.data.mongodb.core.query.Query(Criteria.where("expired").lt("new Date()"));
-        this.mongoOperations.findAllAndRemove(q, Token.class);
+        this.tokenRepositoryMongoDb.deleteInvalid();
     }
 }

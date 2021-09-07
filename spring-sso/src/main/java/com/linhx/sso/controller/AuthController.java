@@ -9,9 +9,10 @@ import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.controller.dtos.request.AuthDto;
 import com.linhx.sso.controller.dtos.request.GrantAccessTokenDto;
 import com.linhx.sso.entities.User;
+import com.linhx.sso.exceptions.LoginInfoWrongException;
+import com.linhx.sso.exceptions.RefreshTokenAlreadyUsedException;
 import com.linhx.sso.services.AuthService;
 import com.linhx.sso.services.RequestAccessTokenService;
-import com.linhx.sso.services.token.TokenDetail;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -68,19 +69,31 @@ public class AuthController {
     @PostMapping(Paths.REFRESH_TOKEN)
     @ResponseBody
     public void refreshToken(@CookieValue(SecurityConstants.COOKIE_REFRESH_TOKEN) String refreshToken,
-                               HttpServletResponse response)
-            throws BaseException, AuthenticationException {
-        var token = this.authService.refresh(refreshToken);
+                             HttpServletResponse response) throws Exception {
+        try {
+            var token = this.authService.refresh(refreshToken);
+            var cookieAccessToken = new Cookie(SecurityConstants.COOKIE_ACCESS_TOKEN, token.getAccessToken());
+            cookieAccessToken.setHttpOnly(true);
+            cookieAccessToken.setDomain(this.env.getSecurityDomain());
+            var cookieRefreshToken = new Cookie(SecurityConstants.COOKIE_REFRESH_TOKEN, token.getRefreshToken());
+            cookieRefreshToken.setHttpOnly(true);
+            cookieRefreshToken.setDomain(this.env.getSecurityDomain());
 
-        var cookieAccessToken = new Cookie(SecurityConstants.COOKIE_ACCESS_TOKEN, token.getAccessToken());
-        cookieAccessToken.setHttpOnly(true);
-        cookieAccessToken.setDomain(this.env.getSecurityDomain());
-        var cookieRefreshToken = new Cookie(SecurityConstants.COOKIE_REFRESH_TOKEN, token.getRefreshToken());
-        cookieRefreshToken.setHttpOnly(true);
-        cookieRefreshToken.setDomain(this.env.getSecurityDomain());
-
-        response.addCookie(cookieAccessToken);
-        response.addCookie(cookieRefreshToken);
+            response.addCookie(cookieAccessToken);
+            response.addCookie(cookieRefreshToken);
+        } catch (RefreshTokenAlreadyUsedException e) {
+            // for the case two tab of one browser refresh token at the same time => one of them will fail (RefreshTokenAlreadyUsedException)
+            // add a logout scheduler by user login history id
+            // if user can verify that the two request is from on browser then cancel the scheduler
+            // using a jwt (contains the scheduler id) in the cookie to verify, check com.linhx.sso.configs.security.AuthorizationFilter.cancelLogoutByLoginHistoryScheduler
+            var logoutByLoginHistoryScheduler = this.authService.logoutScheduler(e.getLoginHistoryId());
+            var llhsJwt = this.authService.createLlhsJwt(logoutByLoginHistoryScheduler.getId());
+            var cookieLogoutByLhScheduler = new Cookie(SecurityConstants.COOKIE_LOGOUT_BY_LH_SCHEDULER_ID, llhsJwt);
+            cookieLogoutByLhScheduler.setHttpOnly(true);
+            cookieLogoutByLhScheduler.setDomain(this.env.getSecurityDomain());
+            response.addCookie(cookieLogoutByLhScheduler);
+            throw new LoginInfoWrongException("error.refreshToken.alreadyUsed");
+        }
     }
 
     @GetMapping(Paths.PROFILE)

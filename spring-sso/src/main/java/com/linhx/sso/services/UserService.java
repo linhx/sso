@@ -13,8 +13,8 @@ import java.util.Optional;
  * @since 28/10/2020
  */
 public interface UserService {
-    Optional<User> findByUsername(String username) throws BaseException;
-    Optional<User> findById(Long id) throws BaseException;
-    Optional<User> findByUuid(String uuid) throws BaseException;
+    Optional<User> findByUsername(String username);
+    Optional<User> findById(Long id);
+    Optional<User> findByUuid(String uuid);
     LoginHistory createLoginHistory(Long userId) throws BaseException;
 }

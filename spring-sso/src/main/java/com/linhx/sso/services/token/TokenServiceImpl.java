@@ -5,6 +5,8 @@ import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.configs.security.UserDetail;
 import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.entities.Token;
+import com.linhx.sso.exceptions.GenerateTokenException;
+import com.linhx.sso.exceptions.ParseTokenException;
 import com.linhx.sso.repositories.SequenceRepository;
 import com.linhx.sso.repositories.TokenRepository;
 import com.linhx.utils.JwtUtils;
@@ -45,24 +47,28 @@ public class TokenServiceImpl implements TokenService {
         return this.invalidIds;
     }
 
-    public JwtUtils.JwtResult generateToken(Long userId, Long loginHistoryId, F<Token, JwtUtils.JwtResult> f) throws Exception {
-        var tokenEntity = new Token(
-                this.sequenceRepository.getNextSequence(Token.SEQ_NAME),
-                userId,
-                null,
-                false,
-                loginHistoryId
-        );
-        this.tokenRepository.save(tokenEntity);
+    public JwtUtils.JwtResult generateToken(Long userId, Long loginHistoryId, F<Token, JwtUtils.JwtResult> f) throws GenerateTokenException {
+        try {
+            var tokenEntity = new Token(
+                    this.sequenceRepository.getNextSequence(Token.SEQ_NAME),
+                    userId,
+                    null,
+                    false,
+                    loginHistoryId
+            );
+            this.tokenRepository.save(tokenEntity);
 
-        var result = f.apply(tokenEntity);
+            var result = f.apply(tokenEntity);
 
-        tokenEntity.setExpired(result.getExpired());
-        this.tokenRepository.save(tokenEntity);
-        return result;
+            tokenEntity.setExpired(result.getExpired());
+            this.tokenRepository.save(tokenEntity);
+            return result;
+        } catch (Exception e) {
+            throw new GenerateTokenException(e);
+        }
     }
 
-    public JwtUtils.JwtResult generateAccessToken(UserDetail user, Long loginHistoryId, Long refreshTokenId) throws Exception {
+    public JwtUtils.JwtResult generateAccessToken(UserDetail user, Long loginHistoryId, Long refreshTokenId) throws GenerateTokenException {
         return this.generateToken(user.getId(), loginHistoryId, token -> {
             var userStr = mapper.writeValueAsString(user);
             return JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_USER, userStr)
@@ -75,7 +81,7 @@ public class TokenServiceImpl implements TokenService {
         });
     }
 
-    public JwtUtils.JwtResult generateRefreshToken(UserDetail user, Long loginHistoryId) throws Exception {
+    public JwtUtils.JwtResult generateRefreshToken(UserDetail user, Long loginHistoryId) throws GenerateTokenException {
         return this.generateToken(user.getId(), loginHistoryId, token ->
                 JwtUtils.generate(builder -> builder.claim(SecurityConstants.JWT_USER, user.getId())
                                 .claim(SecurityConstants.JWT_ID, token.getId())
@@ -86,14 +92,18 @@ public class TokenServiceImpl implements TokenService {
         );
     }
 
-    public TokenDetail parseAccessToken(String token) throws Exception {
-        var claims = JwtUtils.parse(token, this.env.getAccessTokenSecret());
-        var id = claims.get(SecurityConstants.JWT_ID, Long.class);
-        var refreshTokenId = claims.get(SecurityConstants.JWT_REFRESH_TOKEN_ID, Long.class);
-        var userStr = claims.get(SecurityConstants.JWT_USER, String.class);
-        var loginHistoryId = claims.get(SecurityConstants.JWT_LOGIN_HISTORY_ID, Long.class);
-        var userDetail = this.mapper.readValue(userStr, UserDetail.class);
-        return new TokenDetail(id, refreshTokenId, userDetail, claims.getExpiration(), loginHistoryId);
+    public TokenDetail parseAccessToken(String token) throws ParseTokenException {
+        try {
+            var claims = JwtUtils.parse(token, this.env.getAccessTokenSecret());
+            var id = claims.get(SecurityConstants.JWT_ID, Long.class);
+            var refreshTokenId = claims.get(SecurityConstants.JWT_REFRESH_TOKEN_ID, Long.class);
+            var userStr = claims.get(SecurityConstants.JWT_USER, String.class);
+            var loginHistoryId = claims.get(SecurityConstants.JWT_LOGIN_HISTORY_ID, Long.class);
+            var userDetail = this.mapper.readValue(userStr, UserDetail.class);
+            return new TokenDetail(id, refreshTokenId, userDetail, claims.getExpiration(), loginHistoryId);
+        } catch (Exception e) {
+            throw new ParseTokenException(e);
+        }
     }
 
     public RefreshTokenDetail parseRefreshToken(String token) {
