@@ -1,7 +1,9 @@
 package com.linhx.utils;
 
+import java.sql.Timestamp;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
@@ -45,5 +47,9 @@ public class DateTimeUtils {
         Calendar calendar = Calendar.getInstance();
         calendar.add(Calendar.SECOND, offset);
         return calendar.getTime();
+    }
+
+    public static Timestamp timestampNow () {
+        return Timestamp.from(Instant.now());
     }
 }

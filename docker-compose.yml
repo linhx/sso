@@ -3,7 +3,7 @@ version: "3.8"
 services:
   mongo:
     image: mongo:latest
-    restart: always
+    restart: on-failure
     environment:
       MONGO_INITDB_ROOT_USERNAME: linhx
       MONGO_INITDB_ROOT_PASSWORD: root
@@ -34,3 +34,4 @@ services:
       DATABASE_PASSWORD: root
       DATABASE_NAME: sso
       DATABASE_PORT: 27017
+      SENDGRID_KEY: sendgrid_api_key

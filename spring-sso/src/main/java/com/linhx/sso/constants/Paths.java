@@ -15,6 +15,8 @@ public class Paths {
     public static final String REFRESH_TOKEN = "/refresh-token";
     public static final String CAPTCHA_LOGIN = "/captcha-login";
     public static final String PROFILE = "/profile";
+    public static final String FORGET_PASSWORD = "/forget_password";
+    public static final String RESET_PASSWORD = "/reset_password";
 
     public static final String[] PUBLIC_PATHS = {
             ASSETS,
@@ -22,13 +24,7 @@ public class Paths {
             AUTH,
             REFRESH_TOKEN,
             CAPTCHA_LOGIN,
-            // swagger
-            "/swagger-ui.html",
-            "/v2/api-docs",
-            "/configuration/ui",
-            "/swagger-resources/**",
-            "/configuration/security",
-            "/swagger-ui.html",
-            "/webjars/**"
+            FORGET_PASSWORD,
+            RESET_PASSWORD,
     };
 }

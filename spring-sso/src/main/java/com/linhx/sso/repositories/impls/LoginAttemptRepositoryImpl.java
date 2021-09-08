@@ -8,6 +8,11 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+interface LoginAttemptMongoDbRepository extends MongoRepository<LoginAttempt, Long> {
+    @Query(value = "{ ip: ?0 }")
+    Optional<LoginAttempt> findByIp(String ip);
+}
+
 /**
  * LoginAttemptRepositoryImpl
  *
@@ -36,9 +41,4 @@ public class LoginAttemptRepositoryImpl implements LoginAttemptRepository {
     public Optional<LoginAttempt> findByIp(String ip) {
         return this.loginAttemptMongoDbRepo.findByIp(ip);
     }
-}
-
-interface LoginAttemptMongoDbRepository extends MongoRepository<LoginAttempt, Long> {
-    @Query(value = "{ ip: ?0 }")
-    Optional<LoginAttempt> findByIp(String ip);
 }

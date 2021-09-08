@@ -17,4 +17,13 @@ public interface UserRepository {
     Optional<User> findById(Long id);
 
     Optional<User> findByUuid(String uuid);
+
+    /**
+     *
+     * @param identifier username or email
+     * @return
+     */
+    Optional<User> findByIdentifier(String identifier);
+
+    User save(User entity);
 }

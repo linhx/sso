@@ -32,11 +32,13 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
     private final LoginAttemptService loginAttemptService;
     private final EnvironmentVariable env;
     private final CaptchaSession captchaSession;
+    private final PasswordEncoder passwordEncoder;
 
     public WebSecurityConfig(UserDetailsService userDetailsService, TokenService tokenService,
                              UserService userService, AuthService authService,
                              LoginAttemptService loginAttemptService,
-                             EnvironmentVariable env, CaptchaSession captchaSession) {
+                             EnvironmentVariable env, CaptchaSession captchaSession,
+                             PasswordEncoder passwordEncoder) {
         this.userDetailsService = userDetailsService;
         this.tokenService = tokenService;
         this.userService = userService;
@@ -44,11 +46,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
         this.loginAttemptService = loginAttemptService;
         this.env = env;
         this.captchaSession = captchaSession;
-    }
-
-    @Bean
-    public PasswordEncoder passwordEncoder() {
-        return new BCryptPasswordEncoder();
+        this.passwordEncoder = passwordEncoder;
     }
 
     @Override
@@ -62,7 +60,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                 .anyRequest()
                 .authenticated()
                 .and()
-                .addFilter(new AuthenticationFilter(authenticationManager(), this.tokenService,
+                .addFilter(new AuthenticationFilter(authenticationManager(),
+                        this.tokenService,
                         this.userService,
                         this.env,
                         this.loginAttemptService,
@@ -77,7 +76,7 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
-        auth.userDetailsService(this.userDetailsService).passwordEncoder(this.passwordEncoder());
+        auth.userDetailsService(this.userDetailsService).passwordEncoder(this.passwordEncoder);
     }
 
     @Bean

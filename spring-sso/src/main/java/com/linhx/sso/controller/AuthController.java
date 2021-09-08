@@ -1,6 +1,7 @@
 package com.linhx.sso.controller;
 
 import com.linhx.exceptions.BaseException;
+import com.linhx.exceptions.ResetPasswordException;
 import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.configs.security.UserDetail;
 import com.linhx.sso.constants.Pages;
@@ -8,11 +9,16 @@ import com.linhx.sso.constants.Paths;
 import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.controller.dtos.request.AuthDto;
 import com.linhx.sso.controller.dtos.request.GrantAccessTokenDto;
+import com.linhx.sso.controller.dtos.request.ResetPasswordDto;
+import com.linhx.sso.controller.dtos.request.ResetPasswordRequestDto;
 import com.linhx.sso.entities.User;
 import com.linhx.sso.exceptions.LoginInfoWrongException;
 import com.linhx.sso.exceptions.RefreshTokenAlreadyUsedException;
 import com.linhx.sso.services.AuthService;
 import com.linhx.sso.services.RequestAccessTokenService;
+import com.linhx.sso.services.UserService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
@@ -30,14 +36,17 @@ import javax.servlet.http.HttpServletResponse;
 @Controller
 @RequestMapping
 public class AuthController {
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
     private final RequestAccessTokenService requestAccessTokenService;
     private final AuthService authService;
+    private final UserService userService;
     private final EnvironmentVariable env;
 
     public AuthController(RequestAccessTokenService requestAccessTokenService,
-                          AuthService authService, EnvironmentVariable env) {
+                          AuthService authService, UserService userService, EnvironmentVariable env) {
         this.requestAccessTokenService = requestAccessTokenService;
         this.authService = authService;
+        this.userService = userService;
         this.env = env;
     }
 
@@ -100,5 +109,24 @@ public class AuthController {
     @ResponseBody
     public Object getProfile(@AuthenticationPrincipal UserDetail principal) {
         return principal;
+    }
+
+
+    @PostMapping(Paths.FORGET_PASSWORD)
+    @ResponseBody
+    public void forgetPassword(@RequestBody ResetPasswordRequestDto resetPasswordRequestDto) throws BaseException {
+        try {
+            this.userService.requestResetPassword(resetPasswordRequestDto);
+        } catch (ResetPasswordException e) {
+            throw e;
+        } catch (BaseException e) {
+            logger.error("error.requestResetPassword: {}", e.getMessages());
+        }
+    }
+
+    @PostMapping(Paths.RESET_PASSWORD)
+    @ResponseBody
+    public void resetPassword(@RequestBody ResetPasswordDto dto) throws BaseException {
+        this.userService.resetPassword(dto);
     }
 }

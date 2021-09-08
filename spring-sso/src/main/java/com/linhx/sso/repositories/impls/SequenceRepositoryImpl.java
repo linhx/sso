@@ -1,7 +1,5 @@
 package com.linhx.sso.repositories.impls;
 
-import com.linhx.exceptions.BaseException;
-import com.linhx.exceptions.ResourceNotFoundException;
 import com.linhx.sso.entities.Sequence;
 import com.linhx.sso.exceptions.SequenceException;
 import com.linhx.sso.repositories.SequenceRepository;

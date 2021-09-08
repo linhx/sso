@@ -5,6 +5,10 @@ import com.linhx.sso.repositories.LogoutByLoginHistorySchedulerRepository;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
+interface LogoutByLoginHistorySchedulerMongoDbRepository extends MongoRepository<LogoutByLoginHistoryScheduler, Long> {
+
+}
+
 /**
  * LogoutByLoginHistorySchedulerRepositoryImpl
  *
@@ -29,8 +33,4 @@ public class LogoutByLoginHistorySchedulerRepositoryImpl implements LogoutByLogi
     public void delete(Long id) {
         this.logoutByLoginHistorySchedulerMongoDbRepo.deleteById(id);
     }
-}
-
-interface LogoutByLoginHistorySchedulerMongoDbRepository extends MongoRepository<LogoutByLoginHistoryScheduler, Long> {
-
 }

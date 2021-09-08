@@ -23,3 +23,7 @@ spring:
     mongodb:
       uri: mongodb://${DATABASE_USER}:${DATABASE_PASSWORD}@${DATABASE_HOST}:${DATABASE_PORT}
       database: ${DATABASE_NAME}
+
+mail:
+  sendgrid:
+    key: ${SENDGRID_KEY}

@@ -1,5 +1,6 @@
 package com.linhx.sso.configs;
 
+import com.linhx.sso.constants.Paths;
 import com.linhx.utils.StringUtils;
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,8 @@ public class EnvironmentVariable {
     private Integer securityLoginAttemptsFailedAllowed;
     @Value("${security.login-attempts.time-blocking}")
     private Integer securityLoginAttemptsTimeBlocking;
+    @Value("${mail.sendgrid.key}")
+    private String sendgridApiKey;
 
     public String[] getCorsOrigins() {
         if (StringUtils.isExist(this.corsOrigins)) {
@@ -44,5 +47,9 @@ public class EnvironmentVariable {
             return this.corsMethods.split(",");
         }
         return new String[]{};
+    }
+
+    public String getResetPasswordUrl(String token) {
+        return StringUtils.joinUrl(this.securityDomain, Paths.RESET_PASSWORD, token);
     }
 }
