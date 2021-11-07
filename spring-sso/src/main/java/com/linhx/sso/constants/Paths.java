@@ -13,6 +13,7 @@ public class Paths {
     public static final String GRANT_TOKEN = "/grant-token";
     public static final String AUTH = "/auth";
     public static final String REFRESH_TOKEN = "/refresh-token";
+    public static final String CANCEL_LOGOUT = "/cancel-logout";
     public static final String CAPTCHA_LOGIN = "/captcha-login";
     public static final String PROFILE = "/profile";
     public static final String FORGET_PASSWORD = "/forget_password";

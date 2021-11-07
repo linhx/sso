@@ -2,21 +2,20 @@ package com.linhx.sso.controller;
 
 import com.linhx.exceptions.BaseException;
 import com.linhx.exceptions.ResetPasswordException;
+import com.linhx.exceptions.message.Message;
 import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.configs.security.UserDetail;
 import com.linhx.sso.constants.Pages;
 import com.linhx.sso.constants.Paths;
 import com.linhx.sso.constants.SecurityConstants;
-import com.linhx.sso.controller.dtos.request.AuthDto;
-import com.linhx.sso.controller.dtos.request.GrantAccessTokenDto;
-import com.linhx.sso.controller.dtos.request.ResetPasswordDto;
-import com.linhx.sso.controller.dtos.request.ResetPasswordRequestDto;
+import com.linhx.sso.controller.dtos.request.*;
 import com.linhx.sso.entities.User;
 import com.linhx.sso.exceptions.LoginInfoWrongException;
 import com.linhx.sso.exceptions.RefreshTokenAlreadyUsedException;
 import com.linhx.sso.services.AuthService;
 import com.linhx.sso.services.RequestAccessTokenService;
 import com.linhx.sso.services.UserService;
+import com.linhx.utils.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -97,13 +96,21 @@ public class AuthController {
             // using a jwt (contains the scheduler id) in the cookie to verify, check com.linhx.sso.configs.security.AuthorizationFilter.cancelLogoutByLoginHistoryScheduler
             var logoutByLoginHistoryScheduler = this.authService.logoutScheduler(e.getLoginHistoryId());
             var llhsJwt = this.authService.createLlhsJwt(logoutByLoginHistoryScheduler.getId());
-            var cookieLogoutByLhScheduler = new Cookie(SecurityConstants.COOKIE_LOGOUT_BY_LH_SCHEDULER_ID, llhsJwt);
-            cookieLogoutByLhScheduler.setHttpOnly(true);
-            cookieLogoutByLhScheduler.setDomain(this.env.getSecurityDomain());
-            response.addCookie(cookieLogoutByLhScheduler);
-            throw new LoginInfoWrongException("error.refreshToken.alreadyUsed");
+            throw new LoginInfoWrongException(Message.error("error.refreshToken.alreadyUsed")
+                    .param(SecurityConstants.LOGOUT_BY_LH_SCHEDULER_ID, llhsJwt).build());
         }
     }
+
+    @PostMapping(Paths.CANCEL_LOGOUT)
+    public void cancelLogout(@RequestBody CancelLogoutDto dto) {
+        if (dto != null && StringUtils.isExist(dto.getLlhs())) {
+            var llhsId = this.authService.parseLlhsJwt(dto.getLlhs());
+            this.authService.cancelLogoutByLoginHistoryScheduler(llhsId);
+        } else {
+            throw new LoginInfoWrongException("error.refreshToken.cancelLogout.missingToken");
+        }
+    }
+
 
     @GetMapping(Paths.PROFILE)
     @ResponseBody

@@ -23,7 +23,7 @@ services:
     command: ./spring-sso/gradlew -p ./spring-sso --project-cache-dir /tmp/gradle-cache bootRun -DDEBUG=true
     environment:
       APP_PORT: 3000
-      CORS_ORIGINS: http://localhost:8080
+      CORS_ORIGINS: http://localhost:8080,http://linhx.local
       SECURITY_DOMAIN: linhx.local
       ACCESS_TOKEN_SECRET: access_token_keys_used_with_HMAC-SHA_algorithms_must_have_a_size_greater_than_or_equal_256_bits
       REFRESH_TOKEN_SECRET: refresh_token_keys_used_with_HMAC-SHA_algorithms_must_have_a_size_greater_than_or_equal_256_bits

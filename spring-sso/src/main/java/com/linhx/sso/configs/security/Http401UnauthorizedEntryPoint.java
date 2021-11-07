@@ -3,6 +3,7 @@ package com.linhx.sso.configs.security;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linhx.exceptions.message.Message;
 import com.linhx.sso.controller.dtos.response.MessagesDto;
+import com.linhx.sso.exceptions.CAuthenticationException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.AuthenticationException;
@@ -30,7 +31,12 @@ public class Http401UnauthorizedEntryPoint implements AuthenticationEntryPoint {
         if (logger.isDebugEnabled()) {
             logger.debug("Pre-authenticated entry point called. Rejecting access");
         }
-        var errorMsg = Message.error("error.auth.unauthorized").build();
+        Message errorMsg;
+        if (arg2 instanceof CAuthenticationException) {
+            errorMsg = ((CAuthenticationException) arg2).getCMessage();
+        } else {
+            errorMsg = Message.error("error.auth.unauthorized").build();
+        }
         ObjectMapper mapper = new ObjectMapper();
         String tokensStr = mapper.writeValueAsString(MessagesDto.fromMessage(errorMsg));
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);

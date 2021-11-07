@@ -1,12 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <Configuration status="INFO">
+    <Properties>
+        <property name="LOG_FOLDER">./logs</property>
+        <property name="LOG_PATTERN">%d{ISO8601} %5level %5pid --- [%15t] %c{10} %M: %msg%n</property>
+        <property name="LOG_NAME">sso</property>
+    </Properties>
     <Appenders>
         <Console name="LogToConsole" target="SYSTEM_OUT">
-            <PatternLayout charset="UTF-8" pattern="%d{ISO8601}{GMT} [%-5level] [%t] %c{1} - %msg%n"/>
+            <PatternLayout charset="UTF-8" pattern="${LOG_PATTERN}"/>
         </Console>
-        <File name="LogToFile" fileName="logs/app.log">
-            <PatternLayout charset="UTF-8" pattern="%d{ISO8601}{GMT} [%-5level] [%t] %c{1} - %msg%n"/>
-        </File>
+        <RollingFile name="LogToFile" fileName="${LOG_FOLDER}/${LOG_NAME}.log"
+                     filePattern="${LOG_FOLDER}/${LOG_NAME}-%d{yyyy-MM-dd}.log">
+            <PatternLayout charset="UTF-8" pattern="${LOG_PATTERN}"/>
+            <Policies>
+                <TimeBasedTriggeringPolicy interval="1"/>
+            </Policies>
+        </RollingFile>
     </Appenders>
     <Loggers>
         <Root level="info">

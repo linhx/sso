@@ -14,7 +14,6 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -67,9 +66,8 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         this.loginAttemptService,
                         this.captchaSession))
                 .addFilter(new AuthorizationFilter(authenticationManager(),
-                        this.tokenService,
-                        this.authService,
-                        this.env))
+                        this.tokenService
+                ))
                 .sessionManagement()
                 .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
     }

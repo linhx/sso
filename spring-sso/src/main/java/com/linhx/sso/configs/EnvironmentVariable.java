@@ -20,12 +20,10 @@ public class EnvironmentVariable {
     private String corsMethods;
     @Value("${security.jwt.access-token-secret}")
     private String accessTokenSecret;
-    @Value("${security.jwt.refresh-token-secret}")
+    @Value("${security.jwt.llhs-secret}")
     private String llhsSecret;
     @Value("${security.jwt.refresh-token-secret}")
     private String refreshTokenSecret;
-    @Value("${security.jwt.request-access-token-secret}")
-    private String requestAccessTokenSecret;
     @Value("${security.domain}")
     private String securityDomain;
     @Value("${security.login-attempts.failed-allowed}")

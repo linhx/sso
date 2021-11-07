@@ -13,9 +13,9 @@ import java.util.Map;
  */
 @Getter
 public class Message {
-    private MessageType type;
-    private String messageCode;
-    private Map<String, Object> params;
+    private final MessageType type;
+    private final String messageCode;
+    private final Map<String, Object> params;
 
     private Message (MessageBuilder builder) {
         this.type = builder.getType();
