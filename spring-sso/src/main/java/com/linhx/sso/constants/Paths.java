@@ -7,6 +7,7 @@ public class Paths {
 
     public static final String ROOT = "/";
     public static final String ASSETS = "/assets/**";
+    public static final String FAVICON = "favicon.ico"
     public static final String LOGIN = "/login";
 
     public static final String ACCOUNT = "/account";
@@ -21,6 +22,7 @@ public class Paths {
 
     public static final String[] PUBLIC_PATHS = {
             ASSETS,
+            FAVICON,
             LOGIN,
             AUTH,
             REFRESH_TOKEN,
