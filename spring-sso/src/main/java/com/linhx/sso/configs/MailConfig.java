@@ -3,13 +3,13 @@ package com.linhx.sso.configs;
 import com.linhx.exceptions.ResetPasswordException;
 import com.linhx.utils.StringUtils;
 import lombok.Getter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.util.ResourceUtils;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.util.HashMap;
 
 /**
@@ -22,6 +22,8 @@ import java.util.HashMap;
 @Configuration
 @PropertySource(value = "classpath:emailconfig.properties", encoding = "UTF-8")
 public class MailConfig {
+    private static final Logger logger = LoggerFactory.getLogger(MailConfig.class);
+
     @Value("${email.admin}")
     private String adminEmail;
     @Value("${email.resetpassword.subject}")
@@ -29,17 +31,23 @@ public class MailConfig {
     @Value("${email.resetpassword.content.filepath}")
     private String resetPasswordContentFilePath;
 
+	private final ResourceLoader resourceLoader;
+
+	public ResourceApplication(ResourceLoader resourceLoader) {
+		this.resourceLoader = resourceLoader;
+	}
+
     public String getResetPasswordContent(String fullName, String url) throws ResetPasswordException {
         try {
-            File mailContentFile = ResourceUtils.getFile(this.resetPasswordContentFilePath);
-            try (var mailContentIs = new FileInputStream(mailContentFile)) {
+            var mailContentResource = resourceLoader.getResource((this.resetPasswordContentFilePath);
+            try (var mailContentIs = mailContentResource.getInputStream()) {
                 var params = new HashMap<String, Object>();
                 params.put("fullName", fullName);
                 params.put("url", url);
                 return StringUtils.format(mailContentIs, params);
             }
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("error.resetPassword.cantCreateMail", e);
             throw new ResetPasswordException("error.resetPassword.cantCreateMail");
         }
     }
