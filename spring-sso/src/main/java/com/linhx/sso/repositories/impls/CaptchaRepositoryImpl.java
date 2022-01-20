@@ -3,12 +3,16 @@ package com.linhx.sso.repositories.impls;
 import com.linhx.sso.entities.Captcha;
 import com.linhx.sso.repositories.CaptchaRepository;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.Date;
 import java.util.Optional;
 
 
 interface CaptchaMongoDbRepository extends MongoRepository<Captcha, String> {
+    @Query(value = "{'createdAt':{$lte: ?0}}", delete = true)
+    void deleteCreatedAtLte(Date date);
 }
 
 /**
@@ -38,5 +42,10 @@ public class CaptchaRepositoryImpl implements CaptchaRepository {
     @Override
     public void deleteById(String id) {
         this.captchaMongoDbRepository.deleteById(id);
+    }
+
+    @Override
+    public void deleteCreatedAtLte(Date date) {
+        this.captchaMongoDbRepository.deleteCreatedAtLte(date);
     }
 }

@@ -5,7 +5,10 @@ import com.linhx.sso.controller.dtos.response.CaptchaDto;
 import com.linhx.sso.repositories.CaptchaRepository;
 import com.linhx.sso.services.CaptchaService;
 import com.linhx.sso.utils.CCage;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
+
+import java.util.Date;
 
 /**
  * CaptchaServiceImpl
@@ -37,5 +40,11 @@ public class CaptchaServiceImpl implements CaptchaService {
             return captchaOpt.get().getValue().equals(captcha.getValue());
         }
         return false;
+    }
+
+    @Scheduled(cron = "0 0 0 * * SUN")
+    public void deleteOld() {
+        var date = new Date(System.currentTimeMillis() - 86400000);
+        this.captchaRepo.deleteCreatedAtLte(date);
     }
 }
