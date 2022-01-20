@@ -4,8 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import org.springframework.validation.annotation.Validated;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * ResetPasswordDto
@@ -22,6 +25,7 @@ public class ResetPasswordDto {
     private String password;
     @NotBlank
     private String rePassword;
-    @NotBlank
-    private String captcha;
+    @NotNull
+    @Valid
+    private CaptchaReqDto captcha;
 }

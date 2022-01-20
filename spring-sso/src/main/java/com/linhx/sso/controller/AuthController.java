@@ -14,6 +14,7 @@ import com.linhx.sso.exceptions.BadRequestException;
 import com.linhx.sso.exceptions.LoginInfoWrongException;
 import com.linhx.sso.exceptions.RefreshTokenAlreadyUsedException;
 import com.linhx.sso.services.AuthService;
+import com.linhx.sso.services.CaptchaService;
 import com.linhx.sso.services.RequestAccessTokenService;
 import com.linhx.sso.services.UserService;
 import com.linhx.utils.StringUtils;
@@ -41,16 +42,17 @@ public class AuthController {
     private final RequestAccessTokenService requestAccessTokenService;
     private final AuthService authService;
     private final UserService userService;
-    private final CaptchaSession captchaSession;
+    private final CaptchaService captchaService;
     private final EnvironmentVariable env;
 
     public AuthController(RequestAccessTokenService requestAccessTokenService,
-                          AuthService authService, UserService userService, CaptchaSession captchaSession,
+                          AuthService authService, UserService userService,
+                          CaptchaService captchaService,
                           EnvironmentVariable env) {
         this.requestAccessTokenService = requestAccessTokenService;
         this.authService = authService;
         this.userService = userService;
-        this.captchaSession = captchaSession;
+        this.captchaService = captchaService;
         this.env = env;
     }
 
@@ -131,7 +133,7 @@ public class AuthController {
     @PostMapping(Paths.FORGOT_PASSWORD)
     @ResponseBody
     public void forgotPassword(@RequestBody @Validated ResetPasswordRequestDto resetPasswordRequestDto) throws BaseException {
-        if (!this.captchaSession.compareAndInvalidateCaptchaForgotPassword(resetPasswordRequestDto.getCaptcha())) {
+        if (!this.captchaService.isValid(resetPasswordRequestDto.getCaptcha())) {
             throw new BadRequestException("error.forgotPassword.invalidCaptcha");
         }
         try {
@@ -152,7 +154,7 @@ public class AuthController {
     @ResponseBody
     public void resetPassword(@RequestBody @Validated ResetPasswordDto dto, @PathVariable("token") String token)
             throws BaseException {
-        if (!this.captchaSession.compareAndInvalidateCaptchaResetPassword(dto.getCaptcha())) {
+        if (!this.captchaService.isValid(dto.getCaptcha())) {
             throw new BadRequestException("error.resetPassword.invalidCaptcha");
         }
         this.userService.resetPassword(dto, token);

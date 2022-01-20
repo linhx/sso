@@ -6,10 +6,11 @@ import com.linhx.exceptions.BaseException;
 import com.linhx.exceptions.message.Message;
 import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.constants.SecurityConstants;
-import com.linhx.sso.controller.CaptchaSession;
+import com.linhx.sso.controller.dtos.request.CaptchaReqDto;
 import com.linhx.sso.controller.dtos.response.MessagesDto;
 import com.linhx.sso.exceptions.InvalidLoginCaptchaException;
 import com.linhx.sso.exceptions.LoginInfoWrongException;
+import com.linhx.sso.services.CaptchaService;
 import com.linhx.sso.services.UserService;
 import com.linhx.sso.services.loginattempt.LoginAttemptService;
 import com.linhx.sso.services.token.TokenService;
@@ -41,18 +42,20 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private final EnvironmentVariable env;
     private final UserService userService;
     private final LoginAttemptService loginAttemptService;
-    private final CaptchaSession captchaSession;
+    private final CaptchaService captchaService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     public AuthenticationFilter(AuthenticationManager authenticationManager,
                                 TokenService tokenService,
                                 UserService userService,
-                                EnvironmentVariable env, LoginAttemptService loginAttemptService, CaptchaSession captchaSession) {
+                                LoginAttemptService loginAttemptService,
+                                CaptchaService captchaService,
+                                EnvironmentVariable env) {
         this.loginAttemptService = loginAttemptService;
-        this.captchaSession = captchaSession;
         this.setAuthenticationManager(authenticationManager);
         this.tokenService = tokenService;
         this.userService = userService;
+        this.captchaService = captchaService;
         this.env = env;
     }
 
@@ -77,8 +80,8 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
         throw new LoginInfoWrongException("error.login.cantObtainLoginInfo");
     }
 
-    private void checkCaptcha(String captcha) {
-        var validCaptcha = this.captchaSession.compareAndInvalidateCaptchaLogin(captcha);
+    private void checkCaptcha(CaptchaReqDto captchaDto) {
+        var validCaptcha = this.captchaService.isValid(captchaDto);
         if (!validCaptcha) {
             throw new InvalidLoginCaptchaException("error.auth.invalidCaptcha");
         }
@@ -189,5 +192,5 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
 class LoginInfo {
     private String username;
     private String password;
-    private String captcha;
+    private CaptchaReqDto captcha;
 }

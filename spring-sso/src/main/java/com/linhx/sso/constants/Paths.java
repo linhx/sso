@@ -15,9 +15,7 @@ public class Paths {
     public static final String AUTH = "/auth";
     public static final String REFRESH_TOKEN = "/refresh-token";
     public static final String CANCEL_LOGOUT = "/cancel-logout";
-    public static final String CAPTCHA_LOGIN = "/captcha-login";
-    public static final String CAPTCHA_FORGOT_PASSWORD = "/captcha-forgot-password";
-    public static final String CAPTCHA_RESET_PASSWORD = "/captcha-reset-password";
+    public static final String CAPTCHA = "/captcha";
     public static final String PROFILE = "/profile";
     public static final String FORGOT_PASSWORD = "/forgot-password";
     public static final String RESET_PASSWORD = "/reset-password";
@@ -28,9 +26,7 @@ public class Paths {
             LOGIN,
             AUTH,
             REFRESH_TOKEN,
-            CAPTCHA_LOGIN,
-            CAPTCHA_FORGOT_PASSWORD,
-            CAPTCHA_RESET_PASSWORD,
+            CAPTCHA,
             FORGOT_PASSWORD,
             RESET_PASSWORD,
             RESET_PASSWORD + "/*",

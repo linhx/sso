@@ -5,7 +5,9 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.Valid;
 import javax.validation.constraints.NotBlank;
+import javax.validation.constraints.NotNull;
 
 /**
  * ResetPassword
@@ -27,6 +29,7 @@ public class ResetPasswordRequestDto {
     /**
      * captcha
      */
-    @NotBlank
-    private String captcha;
+    @NotNull
+    @Valid
+    private CaptchaReqDto captcha;
 }

@@ -1,6 +1,7 @@
 package com.linhx.sso.controller;
 
 import com.linhx.sso.constants.Paths;
+import com.linhx.sso.services.CaptchaService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -13,27 +14,15 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class CaptchaController {
-    private final CaptchaSession captchaSession;
+    private final CaptchaService captchaService;
 
-    public CaptchaController(CaptchaSession captchaSession) {
-        this.captchaSession = captchaSession;
+    public CaptchaController(CaptchaService captchaService) {
+        this.captchaService = captchaService;
     }
 
-    @GetMapping(Paths.CAPTCHA_LOGIN)
+    @GetMapping(Paths.CAPTCHA)
     @ResponseBody
-    public Object getCaptchaLogin() {
-        return this.captchaSession.generateCaptchaLogin();
-    }
-
-    @GetMapping(Paths.CAPTCHA_FORGOT_PASSWORD)
-    @ResponseBody
-    public Object getCaptchaForgotPassword() {
-        return this.captchaSession.generateCaptchaForgotPassword();
-    }
-
-    @GetMapping(Paths.CAPTCHA_RESET_PASSWORD)
-    @ResponseBody
-    public Object getCaptchaResetPassword() {
-        return this.captchaSession.generateCaptchaResetPassword();
+    public Object getCaptcha() {
+        return this.captchaService.create();
     }
 }

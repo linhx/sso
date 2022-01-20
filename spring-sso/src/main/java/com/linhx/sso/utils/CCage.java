@@ -1,7 +1,6 @@
 package com.linhx.sso.utils;
 
 import com.github.cage.Cage;
-import com.github.cage.IGenerator;
 
 import java.util.Base64;
 
@@ -22,8 +21,8 @@ public class CCage extends Cage {
         return cage.getTokenGenerator().next();
     }
 
-    public static byte[] drawToBase64(String token) {
+    public static String drawToBase64(String token) {
         var img = cage.draw(token);
-        return Base64.getEncoder().encode(img);
+        return "data:image/png;base64," + Base64.getEncoder().encodeToString(img);
     }
 }
