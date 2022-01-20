@@ -137,9 +137,11 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             var cookieAccessToken = new Cookie(SecurityConstants.COOKIE_ACCESS_TOKEN, accessTokenResult.getToken());
             cookieAccessToken.setHttpOnly(true);
             cookieAccessToken.setDomain(this.env.getSecurityDomain());
+            cookieAccessToken.setMaxAge((int) ((accessTokenResult.getExpired().getTime() - System.currentTimeMillis()) / 1000));
             var cookieRefreshToken = new Cookie(SecurityConstants.COOKIE_REFRESH_TOKEN, refreshTokenResult.getToken());
             cookieRefreshToken.setHttpOnly(true);
             cookieRefreshToken.setDomain(this.env.getSecurityDomain());
+            cookieRefreshToken.setMaxAge((int) ((refreshTokenResult.getExpired().getTime() - System.currentTimeMillis()) / 1000));
 
             response.addCookie(cookieAccessToken);
             response.addCookie(cookieRefreshToken);

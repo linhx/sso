@@ -10,4 +10,5 @@ import com.linhx.sso.entities.LoginHistory;
  */
 public interface LoginHistoryRepository {
     LoginHistory save(LoginHistory loginHistory);
+    void deleteAllById(Iterable<? extends Long> ids);
 }

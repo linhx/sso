@@ -90,9 +90,11 @@ public class AuthController {
             var cookieAccessToken = new Cookie(SecurityConstants.COOKIE_ACCESS_TOKEN, token.getAccessToken());
             cookieAccessToken.setHttpOnly(true);
             cookieAccessToken.setDomain(this.env.getSecurityDomain());
+            cookieAccessToken.setMaxAge((int) ((token.getAccessTokenExpired().getTime() - System.currentTimeMillis()) / 1000));
             var cookieRefreshToken = new Cookie(SecurityConstants.COOKIE_REFRESH_TOKEN, token.getRefreshToken());
             cookieRefreshToken.setHttpOnly(true);
             cookieRefreshToken.setDomain(this.env.getSecurityDomain());
+            cookieRefreshToken.setMaxAge((int) ((token.getRefreshTokenExpired().getTime() - System.currentTimeMillis()) / 1000));
 
             response.addCookie(cookieAccessToken);
             response.addCookie(cookieRefreshToken);

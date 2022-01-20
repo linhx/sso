@@ -92,8 +92,8 @@ public class TokenRepositoryImpl implements TokenRepository {
     }
 
     @Override
-    public List<Long> findExpiredTokens() {
-        return this.tokenRepositoryMongoDb.findExpiredTokens().stream().map(Token::getId).collect(Collectors.toList());
+    public List<Token> findExpiredTokens() {
+        return this.tokenRepositoryMongoDb.findExpiredTokens();
     }
 
     @Override

@@ -7,10 +7,12 @@ import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.entities.Token;
 import com.linhx.sso.exceptions.GenerateTokenException;
 import com.linhx.sso.exceptions.ParseTokenException;
+import com.linhx.sso.repositories.LoginHistoryRepository;
 import com.linhx.sso.repositories.SequenceRepository;
 import com.linhx.sso.repositories.TokenRepository;
 import com.linhx.utils.JwtUtils;
 import com.linhx.utils.functions.F;
+import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,6 +21,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author linhx
@@ -26,19 +29,15 @@ import java.util.*;
  */
 @Service
 @Transactional(rollbackFor = Throwable.class)
+@RequiredArgsConstructor
 public class TokenServiceImpl implements TokenService {
     private static final Logger logger = LoggerFactory.getLogger(TokenServiceImpl.class);
     private final EnvironmentVariable env;
     private final TokenRepository tokenRepository;
     private final SequenceRepository sequenceRepository;
+    private final LoginHistoryRepository loginHistoryRepository;
     private final ObjectMapper mapper = new ObjectMapper();
     private HashSet<Long> invalidIds = null;
-
-    public TokenServiceImpl(EnvironmentVariable env, TokenRepository tokenRepository, SequenceRepository sequenceRepository) {
-        this.env = env;
-        this.tokenRepository = tokenRepository;
-        this.sequenceRepository = sequenceRepository;
-    }
 
     private HashSet<Long> getInvalidIds() {
         if (this.invalidIds == null) {
@@ -175,11 +174,18 @@ public class TokenServiceImpl implements TokenService {
     }
 
     public void deleteExpiredTokens() {
+        var loginHistoryIds = new ArrayList<Long>();
         try {
-            List<Long> expiredIds = this.tokenRepository.findExpiredTokens();
-            this.getInvalidIds().removeAll(expiredIds);
+            List<Token> expiredTokens = this.tokenRepository.findExpiredTokens();
+            for (Token token : expiredTokens) {
+                this.getInvalidIds().remove(token.getId());
+                loginHistoryIds.add(token.getLoginHistoryId());
+            }
         } catch (Exception e) {
-            logger.error("error remove expired tokens id");
+            logger.error("error remove expired tokens id from cache");
+        }
+        if (!loginHistoryIds.isEmpty()) {
+            this.loginHistoryRepository.deleteAllById(loginHistoryIds);
         }
         this.tokenRepository.deleteExpiredTokens();
     }

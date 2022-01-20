@@ -19,6 +19,6 @@ public interface TokenRepository {
     Optional<Token> findById(Long id);
     void invalidateByUserId(Long userId);
     void invalidateByLoginHistoryId(Long userId);
-    List<Long> findExpiredTokens();
+    List<Token> findExpiredTokens();
     void deleteExpiredTokens();
 }

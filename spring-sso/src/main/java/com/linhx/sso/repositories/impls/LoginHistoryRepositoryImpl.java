@@ -6,7 +6,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Service;
 
 interface LoginHistoryMongoDbRepository extends MongoRepository<LoginHistory, Long> {
-
 }
 
 /**
@@ -25,5 +24,9 @@ public class LoginHistoryRepositoryImpl implements LoginHistoryRepository {
 
     public LoginHistory save(LoginHistory loginHistory) {
         return this.loginHistoryMongoDbRepository.save(loginHistory);
+    }
+
+    public void deleteAllById(Iterable<? extends Long> ids) {
+        this.loginHistoryMongoDbRepository.deleteAllById(ids);
     }
 }
