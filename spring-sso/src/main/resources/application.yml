@@ -14,6 +14,8 @@ security:
     llhs-secret: ${LLHS_SECRET}
     request-access-token-secret: ${REQUEST_ACCESS_TOKEN_SECRET}
   domain: ${SECURITY_DOMAIN}
+  sso:
+    base-url: ${SSO_DOMAIN}
   login-attempts:
     failed-allowed: 7
     time-blocking: 3600

@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 
+import javax.validation.constraints.NotBlank;
+
 /**
  * ResetPasswordDto
  *
@@ -16,7 +18,10 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class ResetPasswordDto {
-    private String token;
+    @NotBlank
     private String password;
+    @NotBlank
     private String rePassword;
+    @NotBlank
+    private String captcha;
 }

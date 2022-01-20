@@ -8,7 +8,7 @@ import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.controller.CaptchaSession;
 import com.linhx.sso.controller.dtos.response.MessagesDto;
-import com.linhx.sso.exceptions.InvalidCaptchaException;
+import com.linhx.sso.exceptions.InvalidLoginCaptchaException;
 import com.linhx.sso.exceptions.LoginInfoWrongException;
 import com.linhx.sso.services.UserService;
 import com.linhx.sso.services.loginattempt.LoginAttemptService;
@@ -80,7 +80,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
     private void checkCaptcha(String captcha) {
         var validCaptcha = this.captchaSession.compareAndInvalidateCaptchaLogin(captcha);
         if (!validCaptcha) {
-            throw new InvalidCaptchaException("error.auth.invalidCaptcha");
+            throw new InvalidLoginCaptchaException("error.auth.invalidCaptcha");
         }
     }
 
@@ -161,7 +161,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             msg = "error.login.locked-account";
         } else if (failed instanceof DisabledException) {
             msg = "error.login.disabled-account";
-        } else if (failed instanceof InvalidCaptchaException) {
+        } else if (failed instanceof InvalidLoginCaptchaException) {
             msg = "error.login.invalid-captcha";
         } else if (failed instanceof LoginInfoWrongException) {
             msg = failed.getMessage();

@@ -115,8 +115,9 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void resetPassword(ResetPasswordDto resetPasswordDto) throws ResetPasswordException {
-        Optional<ResetPasswordRequest> resetPasswordRequestOpt = this.resetPasswordRequestService.findByToken(resetPasswordDto.getToken());
+    public void resetPassword(ResetPasswordDto resetPasswordDto, String token) throws ResetPasswordException {
+        Optional<ResetPasswordRequest> resetPasswordRequestOpt
+                = this.resetPasswordRequestService.findByToken(token);
         if (resetPasswordRequestOpt.isEmpty() ||
                 !resetPasswordRequestOpt.get().isActive() ||
                 resetPasswordRequestOpt.get().getExpired().compareTo(new BsonTimestamp(System.currentTimeMillis())) <= 0) {

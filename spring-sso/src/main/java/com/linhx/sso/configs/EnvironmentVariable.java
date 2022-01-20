@@ -26,6 +26,8 @@ public class EnvironmentVariable {
     private String refreshTokenSecret;
     @Value("${security.domain}")
     private String securityDomain;
+    @Value("${security.sso.base-url}")
+    private String securitySsoBaseUrl;
     @Value("${security.login-attempts.failed-allowed}")
     private Integer securityLoginAttemptsFailedAllowed;
     @Value("${security.login-attempts.time-blocking}")
@@ -48,6 +50,6 @@ public class EnvironmentVariable {
     }
 
     public String getResetPasswordUrl(String token) {
-        return StringUtils.joinUrl(this.securityDomain, Paths.RESET_PASSWORD, token);
+        return StringUtils.joinUrl(this.securitySsoBaseUrl, Paths.RESET_PASSWORD, token);
     }
 }

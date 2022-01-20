@@ -47,7 +47,7 @@ public interface UserService {
      * @param resetPasswordDto
      * @throws BaseException
      */
-    void resetPassword(ResetPasswordDto resetPasswordDto) throws ResetPasswordException;
+    void resetPassword(ResetPasswordDto resetPasswordDto, String token) throws ResetPasswordException;
 
     void changePassword(User user, String newPassword);
 }

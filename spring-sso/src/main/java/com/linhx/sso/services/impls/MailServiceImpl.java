@@ -8,6 +8,8 @@ import com.linhx.sso.exceptions.EmailException;
 import com.linhx.sso.services.MailService;
 import com.sendgrid.*;
 import org.apache.http.entity.ContentType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
@@ -21,6 +23,7 @@ import java.util.List;
  */
 @Service
 public class MailServiceImpl implements MailService {
+    private static final Logger logger = LoggerFactory.getLogger(MailServiceImpl.class);
     private final MailConfig mailConfig;
     private final EnvironmentVariable env;
 
@@ -44,7 +47,7 @@ public class MailServiceImpl implements MailService {
             request.setBody(mail.build());
             sg.api(request);
         } catch (IOException ex) {
-            throw new EmailException("error.mail.cantSend");
+            throw new EmailException("error.mail.cantSend", ex);
         }
     }
 

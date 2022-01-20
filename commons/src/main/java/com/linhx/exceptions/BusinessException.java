@@ -21,6 +21,10 @@ public class BusinessException extends BaseException {
         super(Message.error(message).build());
     }
 
+    public BusinessException(String message, Throwable t) {
+        super(message, t);
+    }
+
     public BusinessException(Message... message) {
         super(message);
     }

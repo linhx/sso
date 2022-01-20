@@ -10,6 +10,7 @@ import com.linhx.sso.constants.Paths;
 import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.controller.dtos.request.*;
 import com.linhx.sso.entities.User;
+import com.linhx.sso.exceptions.BadRequestException;
 import com.linhx.sso.exceptions.LoginInfoWrongException;
 import com.linhx.sso.exceptions.RefreshTokenAlreadyUsedException;
 import com.linhx.sso.services.AuthService;
@@ -20,6 +21,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import javax.naming.AuthenticationException;
@@ -39,13 +41,16 @@ public class AuthController {
     private final RequestAccessTokenService requestAccessTokenService;
     private final AuthService authService;
     private final UserService userService;
+    private final CaptchaSession captchaSession;
     private final EnvironmentVariable env;
 
     public AuthController(RequestAccessTokenService requestAccessTokenService,
-                          AuthService authService, UserService userService, EnvironmentVariable env) {
+                          AuthService authService, UserService userService, CaptchaSession captchaSession,
+                          EnvironmentVariable env) {
         this.requestAccessTokenService = requestAccessTokenService;
         this.authService = authService;
         this.userService = userService;
+        this.captchaSession = captchaSession;
         this.env = env;
     }
 
@@ -118,22 +123,38 @@ public class AuthController {
         return principal;
     }
 
+    @GetMapping(Paths.FORGOT_PASSWORD)
+    public String forgotPasswordPage() {
+        return Pages.FORGOT_PASSWORD;
+    }
 
-    @PostMapping(Paths.FORGET_PASSWORD)
+    @PostMapping(Paths.FORGOT_PASSWORD)
     @ResponseBody
-    public void forgetPassword(@RequestBody ResetPasswordRequestDto resetPasswordRequestDto) throws BaseException {
+    public void forgotPassword(@RequestBody @Validated ResetPasswordRequestDto resetPasswordRequestDto) throws BaseException {
+        if (!this.captchaSession.compareAndInvalidateCaptchaForgotPassword(resetPasswordRequestDto.getCaptcha())) {
+            throw new BadRequestException("error.forgotPassword.invalidCaptcha");
+        }
         try {
             this.userService.requestResetPassword(resetPasswordRequestDto);
         } catch (ResetPasswordException e) {
             throw e;
         } catch (BaseException e) {
-            logger.error("error.requestResetPassword: {}", e.getMessages());
+            logger.error("error.requestResetPassword", e);
         }
     }
 
-    @PostMapping(Paths.RESET_PASSWORD)
+    @GetMapping(Paths.RESET_PASSWORD + "/{token}")
+    public String resetPasswordPage() {
+        return Pages.RESET_PASSWORD;
+    }
+
+    @PostMapping(Paths.RESET_PASSWORD + "/{token}")
     @ResponseBody
-    public void resetPassword(@RequestBody ResetPasswordDto dto) throws BaseException {
-        this.userService.resetPassword(dto);
+    public void resetPassword(@RequestBody @Validated ResetPasswordDto dto, @PathVariable("token") String token)
+            throws BaseException {
+        if (!this.captchaSession.compareAndInvalidateCaptchaResetPassword(dto.getCaptcha())) {
+            throw new BadRequestException("error.resetPassword.invalidCaptcha");
+        }
+        this.userService.resetPassword(dto, token);
     }
 }
