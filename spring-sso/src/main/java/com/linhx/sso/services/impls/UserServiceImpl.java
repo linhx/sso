@@ -10,6 +10,7 @@ import com.linhx.sso.controller.dtos.request.ResetPasswordRequestDto;
 import com.linhx.sso.entities.LoginHistory;
 import com.linhx.sso.entities.ResetPasswordRequest;
 import com.linhx.sso.entities.User;
+import com.linhx.sso.exceptions.BadRequestException;
 import com.linhx.sso.repositories.LoginHistoryRepository;
 import com.linhx.sso.repositories.SequenceRepository;
 import com.linhx.sso.repositories.UserRepository;
@@ -115,7 +116,10 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public void resetPassword(ResetPasswordDto resetPasswordDto, String token) throws ResetPasswordException {
+    public void resetPassword(ResetPasswordDto resetPasswordDto, String token) throws BaseException {
+        if (!resetPasswordDto.getPassword().equals(resetPasswordDto.getRePassword())) {
+            throw new BadRequestException("password not match");
+        }
         Optional<ResetPasswordRequest> resetPasswordRequestOpt
                 = this.resetPasswordRequestService.findByToken(token);
         if (resetPasswordRequestOpt.isEmpty() ||
