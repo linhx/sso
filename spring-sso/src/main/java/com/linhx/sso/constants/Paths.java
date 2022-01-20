@@ -7,6 +7,7 @@ public class Paths {
 
     public static final String ROOT = "/";
     public static final String ASSETS = "/assets/**";
+    public static final String FAVICON = "favicon.ico";
     public static final String LOGIN = "/login";
 
     public static final String ACCOUNT = "/account";
@@ -16,11 +17,12 @@ public class Paths {
     public static final String CANCEL_LOGOUT = "/cancel-logout";
     public static final String CAPTCHA_LOGIN = "/captcha-login";
     public static final String PROFILE = "/profile";
-    public static final String FORGET_PASSWORD = "/forget_password";
-    public static final String RESET_PASSWORD = "/reset_password";
+    public static final String FORGET_PASSWORD = "/forget-password";
+    public static final String RESET_PASSWORD = "/reset-password";
 
     public static final String[] PUBLIC_PATHS = {
             ASSETS,
+            FAVICON,
             LOGIN,
             AUTH,
             REFRESH_TOKEN,
