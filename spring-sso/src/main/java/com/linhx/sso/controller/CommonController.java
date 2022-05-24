@@ -1,8 +1,9 @@
 package com.linhx.sso.controller;
 
+import com.linhx.sso.constants.Pages;
+import com.linhx.sso.constants.Paths;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 
 /**
  * CommonController
@@ -12,9 +13,8 @@ import org.springframework.web.bind.annotation.ResponseBody;
  */
 @Controller
 public class CommonController {
-    @GetMapping("/home")
-    @ResponseBody
+    @GetMapping(value = {Paths.ROOT, Paths.HOME})
     public String pageHome() {
-        return "home page"; // TODO for testing
+        return Pages.HOME;
     }
 }

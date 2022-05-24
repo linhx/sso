@@ -6,9 +6,11 @@ public class Paths {
     }
 
     public static final String ROOT = "/";
+    public static final String HOME = "/home";
     public static final String ASSETS = "/assets/**";
     public static final String FAVICON = "favicon.ico";
     public static final String LOGIN = "/login";
+    public static final String LOGOUT = "/logout";
 
     public static final String ACCOUNT = "/account";
     public static final String GRANT_TOKEN = "/grant-token";

@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author linhx
@@ -111,6 +110,26 @@ public class TokenServiceImpl implements TokenService {
         var userId = claims.get(SecurityConstants.JWT_USER, Long.class);
         var loginHistoryId = claims.get(SecurityConstants.JWT_LOGIN_HISTORY_ID, Long.class);
         return new RefreshTokenDetail(id, userId, claims.getExpiration(), loginHistoryId);
+    }
+
+    @Override
+    public void invalidateAccessToken(String at) {
+        try {
+            var accessTokenDetails = this.parseAccessToken(at);
+            this.invalidate(accessTokenDetails);
+        } catch (Exception e) {
+            logger.warn("warn.invalidate.accessToken.cant", e);
+        }
+    }
+
+    @Override
+    public void invalidateRefreshToken(String rt) {
+        try {
+            var refreshTokenDetails = this.parseRefreshToken(rt);
+            this.invalidate(refreshTokenDetails);
+        } catch (Exception e) {
+            logger.warn("warn.invalidate.refreshToken.cant", e);
+        }
     }
 
     private void invalidate(Long id, Long userId, Long loginHistoryId) {

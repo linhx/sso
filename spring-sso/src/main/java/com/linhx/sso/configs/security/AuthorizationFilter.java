@@ -15,6 +15,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
+import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
@@ -22,10 +23,21 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 
 public class AuthorizationFilter extends BasicAuthenticationFilter {
     private static final Logger cLogger = LoggerFactory.getLogger(AuthorizationFilter.class);
+    private static final List<AntPathRequestMatcher> IGNORE_REQUEST_MATCHER = new ArrayList<>();
+
+    static {
+        IGNORE_REQUEST_MATCHER.add(new AntPathRequestMatcher(Paths.LOGIN, "GET"));
+        IGNORE_REQUEST_MATCHER.add(new AntPathRequestMatcher(Paths.ASSETS, "GET"));
+        IGNORE_REQUEST_MATCHER.add(new AntPathRequestMatcher(Paths.FAVICON, "GET"));
+        IGNORE_REQUEST_MATCHER.add(new AntPathRequestMatcher(Paths.FORGOT_PASSWORD, "GET"));
+    }
+
     private final TokenService tokenService;
 
     public AuthorizationFilter(AuthenticationManager authenticationManager,
@@ -36,9 +48,11 @@ public class AuthorizationFilter extends BasicAuthenticationFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain chain) throws IOException, ServletException {
-        UsernamePasswordAuthenticationToken authentication = this.getAuthentication(request);
-        if (!Objects.isNull(authentication)) {
-            SecurityContextHolder.getContext().setAuthentication(authentication);
+        if (IGNORE_REQUEST_MATCHER.stream().noneMatch(m -> m.matches(request))) {
+            UsernamePasswordAuthenticationToken authentication = this.getAuthentication(request);
+            if (!Objects.isNull(authentication)) {
+                SecurityContextHolder.getContext().setAuthentication(authentication);
+            }
         }
         chain.doFilter(request, response);
     }

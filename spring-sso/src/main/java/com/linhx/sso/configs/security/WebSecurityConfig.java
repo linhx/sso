@@ -3,9 +3,9 @@ package com.linhx.sso.configs.security;
 import com.linhx.sso.configs.EnvironmentVariable;
 import com.linhx.sso.constants.Paths;
 import com.linhx.sso.services.CaptchaService;
+import com.linhx.sso.services.UserService;
 import com.linhx.sso.services.loginattempt.LoginAttemptService;
 import com.linhx.sso.services.token.TokenService;
-import com.linhx.sso.services.UserService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
@@ -67,7 +67,11 @@ public class WebSecurityConfig extends WebSecurityConfigurerAdapter {
                         this.tokenService
                 ))
                 .sessionManagement()
-                .sessionCreationPolicy(SessionCreationPolicy.STATELESS);
+                .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                .and()
+                .logout(logout -> logout.logoutUrl(Paths.LOGOUT)
+                        .logoutSuccessUrl(Paths.LOGIN)
+                        .addLogoutHandler(new LogoutHandler(this.tokenService, this.env)));
     }
 
     @Override
