@@ -25,9 +25,7 @@ public interface TokenService {
 
     RefreshTokenDetail parseRefreshToken(String token);
 
-    void invalidateAccessToken(String at);
-
-    void invalidateRefreshToken(String rt);
+    void invalidateByAccessToken(String at);
 
     void invalidate(RefreshTokenDetail tokenDetails);
 

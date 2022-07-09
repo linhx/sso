@@ -1,6 +1,7 @@
 package com.linhx.sso.configs.security;
 
 import com.linhx.sso.configs.EnvironmentVariable;
+import com.linhx.sso.constants.Paths;
 import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.services.token.TokenService;
 import org.springframework.security.core.Authentication;
@@ -26,10 +27,10 @@ public class LogoutHandler extends SecurityContextLogoutHandler {
         this.env = env;
     }
 
-    private void clearCookie(Cookie cookie, HttpServletRequest request, HttpServletResponse response) {
-        Cookie clearCookie = new Cookie(cookie.getName(), null);
+    private void clearCookie(String cookie, String path, HttpServletRequest request, HttpServletResponse response) {
+        Cookie clearCookie = new Cookie(cookie, null);
         String contextPath = request.getContextPath();
-        String cookiePath = StringUtils.hasText(contextPath) ? contextPath : "/";
+        String cookiePath = StringUtils.hasText(path) ? path : contextPath;
         clearCookie.setPath(cookiePath);
         clearCookie.setMaxAge(0);
         clearCookie.setDomain(this.env.getSecurityDomain());
@@ -45,12 +46,9 @@ public class LogoutHandler extends SecurityContextLogoutHandler {
             for (Cookie cookie : cookies) {
                 if (SecurityConstants.COOKIE_ACCESS_TOKEN.equals(cookie.getName())) {
                     // invalidate access token
-                    this.tokenService.invalidateAccessToken(cookie.getValue());
-                    this.clearCookie(cookie, request, response);
-                } else if (SecurityConstants.COOKIE_REFRESH_TOKEN.equals(cookie.getName())) {
-                    // invalidate refresh token
-                    this.tokenService.invalidateRefreshToken(cookie.getValue());
-                    this.clearCookie(cookie, request, response);
+                    this.tokenService.invalidateByAccessToken(cookie.getValue());
+                    this.clearCookie(SecurityConstants.COOKIE_ACCESS_TOKEN, Paths.ROOT, request, response);
+                    this.clearCookie(SecurityConstants.COOKIE_REFRESH_TOKEN, Paths.REFRESH_TOKEN, request, response);
                 }
             }
         }

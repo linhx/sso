@@ -113,22 +113,12 @@ public class TokenServiceImpl implements TokenService {
     }
 
     @Override
-    public void invalidateAccessToken(String at) {
+    public void invalidateByAccessToken(String at) {
         try {
             var accessTokenDetails = this.parseAccessToken(at);
-            this.invalidate(accessTokenDetails);
+            this.invalidateByLoginHistoryId(accessTokenDetails.getLh());
         } catch (Exception e) {
-            logger.warn("warn.invalidate.accessToken.cant", e);
-        }
-    }
-
-    @Override
-    public void invalidateRefreshToken(String rt) {
-        try {
-            var refreshTokenDetails = this.parseRefreshToken(rt);
-            this.invalidate(refreshTokenDetails);
-        } catch (Exception e) {
-            logger.warn("warn.invalidate.refreshToken.cant", e);
+            logger.error("warn.invalidate.byAccessToken.cant", e);
         }
     }
 
