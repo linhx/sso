@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.linhx.exceptions.BaseException;
 import com.linhx.exceptions.message.Message;
 import com.linhx.sso.configs.EnvironmentVariable;
+import com.linhx.sso.constants.Paths;
 import com.linhx.sso.constants.SecurityConstants;
 import com.linhx.sso.controller.dtos.request.CaptchaReqDto;
 import com.linhx.sso.controller.dtos.response.MessagesDto;
@@ -142,6 +143,7 @@ public class AuthenticationFilter extends UsernamePasswordAuthenticationFilter {
             cookieRefreshToken.setHttpOnly(true);
             cookieRefreshToken.setDomain(this.env.getSecurityDomain());
             cookieRefreshToken.setMaxAge((int) ((refreshTokenResult.getExpired().getTime() - System.currentTimeMillis()) / 1000));
+            cookieRefreshToken.setPath(Paths.REFRESH_TOKEN);
 
             response.addCookie(cookieAccessToken);
             response.addCookie(cookieRefreshToken);

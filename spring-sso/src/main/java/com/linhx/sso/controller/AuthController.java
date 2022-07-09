@@ -95,12 +95,14 @@ public class AuthController {
             cookieRefreshToken.setHttpOnly(true);
             cookieRefreshToken.setDomain(this.env.getSecurityDomain());
             cookieRefreshToken.setMaxAge((int) ((token.getRefreshTokenExpired().getTime() - System.currentTimeMillis()) / 1000));
+            cookieRefreshToken.setPath(Paths.REFRESH_TOKEN);
 
             response.addCookie(cookieAccessToken);
             response.addCookie(cookieRefreshToken);
         } catch (RefreshTokenAlreadyUsedException e) {
-            // for the case two tab of one browser refresh token at the same time => one of them will fail (RefreshTokenAlreadyUsedException)
-            // add a logout scheduler by user login history id
+            // if a refresh token is already used, that means maybe the refresh token was stolen.
+            // so invalidate the refresh token and the access token by adding a logout scheduler by user login history id.
+            // For the case two tab of one browser refresh token at the same time => one of them will fail (RefreshTokenAlreadyUsedException)
             // if user can verify that the two request is from on browser then cancel the scheduler
             // using a jwt (contains the scheduler id) in the cookie to verify, check com.linhx.sso.configs.security.AuthorizationFilter.cancelLogoutByLoginHistoryScheduler
             var logoutByLoginHistoryScheduler = this.authService.logoutScheduler(e.getLoginHistoryId());
